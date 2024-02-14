@@ -1,0 +1,149 @@
+---
+title: "COVID worksheet"
+author: "Prashant Kalvapalle"
+format: html
+editor: visual
+---
+
+## Task of the day
+
+We shall remake an iconic plot showing spikes in the number of COVID cases from the [New York Times](https://www.nytimes.com/interactive/2021/us/covid-cases.html) using ggplot. We start from the data [here](https://github.com/nytimes/covid-19-data/tree/master). And we get the quarto workflow for free that allows anyone else to quickly understand and reproduce this + build on it!
+
+Here's the plot we are going to make
+
+![](../assets/NYT_COVID_new_cases.png)
+
+### Side references
+
+Here's another [workflow](https://nandeshwar.info/data-visualization/nyt-data-visualization-r/) that details a similar workflow if you want to go through it in your own time **after the class**
+
+## Let's load packages
+
+Load all necessary packages upfront
+
+```{r load-packages}
+source('0.general_functions.R') # source an R script with shortcut functions
+
+library(tidyverse) # load tidyverse package
+install_or_load_library('zoo') # package for timeseries: rolling avg function
+install_or_load_library('plotly') # for quick interactive plots
+```
+
+## Load data now
+
+load data from the `.csv` file. Make sure the path matches where you stored the file relative to where the `.qmd` file is located
+
+```{r load-data}
+df <- read_csv('../data/us_covid.csv')
+
+polished_df <- read_csv('../data/covid_rolling_avgs.csv')
+
+```
+
+## Exploratory plot
+
+Explore the data by plotting it
+
+```{r eda_plot}
+ggplot(df, 
+       aes(date, cases)) + 
+  
+  geom_point() + 
+  geom_line()
+```
+
+## Data wrangling
+
+How do you get the raw data from the cumulative data?
+
+*Hint: use the* `diff()` function. Hidden [hint](https://stackoverflow.com/a/21418310/9049673)2.
+
+```{r wrangle-1}
+raw_df <- 
+  mutate(df, new_cases = c(cases[1], diff(cases)))
+```
+
+Get the rolling average to smoothen the data.
+
+> A moving average is commonly used with [time series](https://en.wikipedia.org/wiki/Time_series "Time series") data to **smooth out short-term fluctuations** and **highlight longer-term trends** or cycles. The threshold between short-term and long-term depends on the application, and the parameters of the moving average will be set accordingly. Source: [Wikipedia](https://en.wikipedia.org/wiki/Moving_average)
+
+> the daily number of new cases and deaths, the seven-day rolling average and the seven-day rolling average per 100,000 residents.
+
+```{r wrangle-avgs}
+avg_df <- 
+  mutate(raw_df, 
+         
+         avg_new_cases = 
+           zoo::rollmean(new_cases, 7, fill = NA, align = 'right') %>% # rolling avg
+           signif(digits = 2), # round off to 2 decimals
+           
+         pretty_avg =
+           format.AsIs(avg_new_cases, 
+                       digits = 2, scientific = FALSE) # format as char 
+  ) 
+```
+
+## Plot data
+
+Let's plot the data of new cases over time now
+
+```{r first-plot}
+plt1 <- # save the plot to this variable so we can add stuff to it later!
+  {ggplot(raw_df, 
+         aes(date, new_cases)) + 
+  
+  geom_point() + 
+  geom_line()
+    } %>% 
+  
+  print()
+```
+
+```{r interactive-plt1}
+
+plotly::ggplotly(plt1, dynamicTicks = T)
+```
+
+## Smoothened plot
+
+plot the rolling averages now
+
+```{r avg-plot}
+plt_avg <- # save the plot to this variable so we can add stuff to it later!
+  {ggplot(avg_df, 
+         aes(date, avg_new_cases)) + 
+  
+  geom_point(size = .5) + 
+  geom_line()
+    } %>% 
+  
+  print()
+
+```
+
+interactive plot now
+
+```{r avg-interactive-plt}
+plotly::ggplotly(plt_avg, dynamicTicks = T)
+```
+
+## Polish the plot
+
+Now let us polish the plot elements to be more presentable
+
+-   Colour the line red
+
+-   Shade the area below the line light red
+
+-   X axis labels : add months, mentioned in the middle
+
+-   add annotation on the peak that says `7-day average`
+
+-   adjust the plot background and gridlines
+
+```{r polish-plot1}
+
+
+```
+
+## Get to NYT format
