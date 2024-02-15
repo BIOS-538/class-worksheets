@@ -19,9 +19,9 @@ Here's another [workflow](https://nandeshwar.info/data-visualization/nyt-data-vi
 
 ## Let's load packages
 
-Load all necessary packages upfront
+Load all necessary packages upfront. Remember you don't need to use the install.packages function every single time, only the first time you download a package. To check you have the package downloaded, go to Packages tab and search the package name!
 
-```{r load-packages}
+```{r load-packages, warning = FALSE, message = FALSE}
 source('0.general_functions.R') # source an R script with shortcut functions
 
 library(tidyverse) # load tidyverse package
@@ -42,7 +42,7 @@ polished_df <- read_csv('../data/covid_rolling_avgs.csv')
 
 ## Exploratory plot
 
-Explore the data by plotting it
+R makes it easy to quickly create plots to visualize data and get a general sense of it's trends. Explore the data by plotting it! On the X axis you have the date and on the Y you have the **CUMULATIVE number of cases (10\^8 is a 100 million cases!)**
 
 ```{r eda_plot}
 ggplot(df, 
@@ -63,44 +63,45 @@ raw_df <-
   mutate(df, new_cases = c(cases[1], diff(cases)))
 ```
 
-Get the rolling average to smoothen the data.
+Calculate the rolling average to smooth the data.
 
-> A moving average is commonly used with [time series](https://en.wikipedia.org/wiki/Time_series "Time series") data to **smooth out short-term fluctuations** and **highlight longer-term trends** or cycles. The threshold between short-term and long-term depends on the application, and the parameters of the moving average will be set accordingly. Source: [Wikipedia](https://en.wikipedia.org/wiki/Moving_average)
+> A rolling average (A.K.A moving average) is commonly used with [time series](https://en.wikipedia.org/wiki/Time_series "Time series") data to **smooth out short-term fluctuations** and **highlight longer-term trends** or cycles. The threshold between short-term and long-term depends on the application, and the parameters of the moving average will be set accordingly. Source: [Wikipedia](https://en.wikipedia.org/wiki/Moving_average)
 
 > the daily number of new cases and deaths, the seven-day rolling average and the seven-day rolling average per 100,000 residents.
 
 ```{r wrangle-avgs}
 avg_df <- 
   mutate(raw_df, 
-         
          avg_new_cases = 
-           zoo::rollmean(new_cases, 7, fill = NA, align = 'right') %>% # rolling avg
+           zoo::rollmean(new_cases, 
+                         7, 
+                         fill = NA, 
+                         align = 'right') %>% # rolling avg
            signif(digits = 2), # round off to 2 decimals
-           
+         
          pretty_avg =
            format.AsIs(avg_new_cases, 
-                       digits = 2, scientific = FALSE) # format as char 
-  ) 
+                       digits = 2, 
+                       scientific = FALSE)) # format as char 
+   
 ```
 
 ## Plot data
 
-Let's plot the data of new cases over time now
+Let's plot the data of new cases over time now. This is the number of new cases added per day! **We can create the plot and save it to a variable, this allows us to quickly access it later and add new modifications to the plot!**
 
 ```{r first-plot}
-plt1 <- # save the plot to this variable so we can add stuff to it later!
-  {ggplot(raw_df, 
-         aes(date, new_cases)) + 
-  
+plt1 <- raw_df %>% # save the plot to this variable so we can add stuff to it later!
+  ggplot(aes(x = date, y = new_cases)) + 
   geom_point() + 
   geom_line()
-    } %>% 
-  
-  print()
+
+#The ggplot is saved as a 'ggplot object' you can do things with the ggplot object such as print it or manipulate it!  
+  plt1 %>% print()
 ```
 
 ```{r interactive-plt1}
-
+#Plotly is a way to make dynamic ggplots that you can interact with!
 plotly::ggplotly(plt1, dynamicTicks = T)
 ```
 
@@ -109,15 +110,12 @@ plotly::ggplotly(plt1, dynamicTicks = T)
 plot the rolling averages now
 
 ```{r avg-plot}
-plt_avg <- # save the plot to this variable so we can add stuff to it later!
-  {ggplot(avg_df, 
-         aes(date, avg_new_cases)) + 
-  
+plt_avg <- avg_df %>% # save the plot to this variable so we can add stuff to it later!
+  ggplot(aes(date, avg_new_cases)) + 
   geom_point(size = .5) + 
   geom_line()
-    } %>% 
   
-  print()
+  plt_avg %>% print()
 
 ```
 
@@ -133,13 +131,15 @@ Now let us polish the plot elements to be more presentable
 
 -   Colour the line red
 
--   Shade the area below the line light red
+-   Fill in the area below the trendline light red (*hint: use the same argument as you did for the line but use #FF7F7F" instead!)*
 
 -   X axis labels : add months, mentioned in the middle
 
 -   add annotation on the peak that says `7-day average`
 
 -   adjust the plot background and gridlines
+
+-   At the end of your ggplot add theme_bw(). *(there are a variety of different base themes you can choose from as a starting point!)*
 
 ```{r polish-plot1}
 
