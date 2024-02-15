@@ -15,7 +15,9 @@ Here's the plot we are going to make
 
 ### Side references
 
-Here's another [workflow](https://nandeshwar.info/data-visualization/nyt-data-visualization-r/) that details a similar workflow if you want to go through it in your own time **after the class**
+Here is a similar [workflow](https://medium.com/@nickryanpaul/advanced-data-visualization-with-r-and-ggplot2-recreating-the-new-york-times-covid-tracker-359da1795e78) that makes exactly the same kind of NYT style plot
+
+And another [workflow](https://nandeshwar.info/data-visualization/nyt-data-visualization-r/) for a different kind of plot if you want to go through it in your own time **after the class**
 
 ## Let's load packages
 
