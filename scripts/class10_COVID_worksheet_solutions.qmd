@@ -25,7 +25,8 @@ Load all necessary packages upfront. Remember you don't need to use the install.
 source('0.general_functions.R') # source an R script with shortcut functions
 
 library(tidyverse) # load tidyverse package
-install_or_load_library('zoo') # package for timeseries: rolling avg function
+
+# install_or_load_library('zoo') # package for timeseries: rolling avg function
 install_or_load_library('plotly') # for quick interactive plots
 ```
 
@@ -112,10 +113,10 @@ plot the rolling averages now
 ```{r avg-plot}
 plt_avg <- avg_df %>% # save the plot to this variable so we can add stuff to it later!
   ggplot(aes(date, avg_new_cases)) + 
-  geom_point(size = .5) + 
+  # geom_point(size = .5) + # original plot didn't have points
   geom_line()
   
-  plt_avg %>% print()
+plt_avg %>% print()
 
 ```
 
@@ -127,23 +128,90 @@ plotly::ggplotly(plt_avg, dynamicTicks = T)
 
 ## Polish the plot
 
-Now let us polish the plot elements to be more presentable
+Now let us polish the plot elements to be more presentable using these references
+
+1.  [ggplot2-specs](https://ggplot2.tidyverse.org/articles/ggplot2-specs.html) is a good reference to know the options that can be tweaked to change plot elements.
+2.  Refer to [colour related aesthetics](https://ggplot2.tidyverse.org/reference/aes_colour_fill_alpha.html)
+
+**Changes needed on the plot**
 
 -   Colour the line red
 
--   Fill in the area below the trendline light red (*hint: use the same argument as you did for the line but use #FF7F7F" instead!)*
+-   Fill in the area below the trendline light red (*hint: use the same argument as you did for the line but use #FF7F7F" instead!).*
 
 -   X axis labels : add months, mentioned in the middle
 
--   add annotation on the peak that says `7-day average`
+-   add annotation on the largest peak that says `7-day average`
 
 -   adjust the plot background and gridlines
 
 -   At the end of your ggplot add theme_bw(). *(there are a variety of different base themes you can choose from as a starting point!)*
 
 ```{r polish-plot1}
+y_axis_labels <- 1:4 * 2e5
+
+peak_identity <- filter(avg_df, 
+                        avg_new_cases == max(avg_new_cases, na.rm = T))
 
 
+ggplot(avg_df, aes(date, avg_new_cases)) + 
+  
+  # geom_point(size = .5) + # original plot didn't have points
+  geom_line(colour = 'red') + # outline with red
+  geom_area(fill = 'red', alpha = 0.2) + # fill with a transparent red
+  
+  # label the peak
+  annotate(geom = 'text', label = '7-day average',
+           x = peak_identity$date[2], y = peak_identity$avg_new_cases[2]) +
+  
+  
+  # Theme/overall appearance
+  theme_classic() + # plain white background, remove all axis elements
+  
+  # remove axis labels 
+  xlab(NULL) + ylab(NULL) +
+  ggtitle('New reported cases') + # make y axis label as the title!
+  
+  # Now add specific elements
+  
+  # add y axis labels with comma formatting
+  scale_y_continuous(breaks = y_axis_labels,
+                     labels = format(y_axis_labels, 
+                                     scientific = FALSE,
+                                     big.mark = ',')) + 
+  
+  # adding light gridlines
+  theme(
+    panel.grid.major.y = 
+      element_line(colour = 'gray',# light gridlines
+                   linetype = 2), # that are dashed lines
+    
+    plot.title.position = 'plot', # align title to the whole plot
+    axis.line = element_blank() # remove axis lines
+    
+  )
 ```
 
-## Get to NYT format
+## Compare to the final figure
+
+Here's the final image we're comparing to
+
+![](../assets/NYT_COVID_new_cases.png){width="497"}
+
+## Actual data that NYT plotted
+
+NYT made a few more manual corrections to the actual data that was eventually plotted. Here's a plot of the same compared to the plot you made
+
+```{r}
+plt_NYT <- 
+ggplot(polished_df, aes(date, cases_avg)) + 
+  
+  # geom_point(size = .5) + # original plot didn't have points
+  geom_line(colour = 'red') +
+  geom_area(fill = 'red', alpha = 0.2) + # fill with a transparent red
+  
+  theme_classic() # plain white background
+
+library(patchwork)
+polished_plt / plt_NYT
+```
