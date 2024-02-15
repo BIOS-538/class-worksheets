@@ -1,0 +1,136 @@
+---
+title: "COVID worksheet"
+author: "Prashant Kalvapalle"
+format: html
+editor: visual
+---
+
+## Task of the day
+
+We shall remake an iconic plot showing spikes in the number of COVID cases from the [New York Times](https://www.nytimes.com/interactive/2021/us/covid-cases.html) using ggplot. We start from the data [here](https://github.com/nytimes/covid-19-data/tree/master). And we get the quarto workflow for free that allows anyone else to quickly understand and reproduce this + build on it!
+
+Here's the plot we are going to make
+
+![](../assets/NYT_COVID_new_cases.png)
+
+### Side references
+
+Here is a similar [workflow](https://medium.com/@nickryanpaul/advanced-data-visualization-with-r-and-ggplot2-recreating-the-new-york-times-covid-tracker-359da1795e78) that makes exactly the same kind of NYT style plot
+
+And another [workflow](https://nandeshwar.info/data-visualization/nyt-data-visualization-r/) for a different kind of plot if you want to go through it in your own time **after the class**
+
+## Let's load packages
+
+Load all necessary packages upfront. Remember you don't need to use the install.packages function every single time, only the first time you download a package. To check you have the package downloaded, go to Packages tab and search the package name!
+
+```{r load-packages, warning = FALSE, message = FALSE}
+source('0.general_functions.R') # source an R script with shortcut functions
+
+library(tidyverse) # load tidyverse package
+
+# install_or_load_library('zoo') # package for timeseries: rolling avg function
+install_or_load_library('plotly') # for quick interactive plots
+```
+
+## Load data now
+
+load data from the `.csv` file. Make sure the path matches where you stored the file relative to where the `.qmd` file is located
+
+```{r load-data}
+
+```
+
+## Exploratory plot
+
+R makes it easy to quickly create plots to visualize data and get a general sense of it's trends. Explore the data by plotting it! On the X axis you have the date and on the Y you have the **CUMULATIVE number of cases (10\^8 is a 100 million cases!)**
+
+```{r exploratory data analysis plot}
+
+```
+
+## Data wrangling
+
+How do you get the raw data from the cumulative data?
+
+*Hint: use the* `diff()` function. Hidden [hint](https://stackoverflow.com/a/21418310/9049673)2.
+
+```{r wrangle-1}
+
+```
+
+Calculate the rolling average to smooth the data.
+
+> A rolling average (A.K.A moving average) is commonly used with [time series](https://en.wikipedia.org/wiki/Time_series "Time series") data to **smooth out short-term fluctuations** and **highlight longer-term trends** or cycles. The threshold between short-term and long-term depends on the application, and the parameters of the moving average will be set accordingly. Source: [Wikipedia](https://en.wikipedia.org/wiki/Moving_average)
+
+> the daily number of new cases and deaths, the seven-day rolling average and the seven-day rolling average per 100,000 residents.
+
+```{r wrangle-avgs}
+ 
+   
+```
+
+## Plot data
+
+Let's plot the data of new cases over time now. This is the number of new cases added per day! **We can create the plot and save it to a variable, this allows us to quickly access it later and add new modifications to the plot! Click the second plot to see the interactive plots you can make in R!**
+
+```{r first-plot}
+
+```
+
+```{r interactive-plt1}
+#Plotly is a way to make dynamic ggplots that you can interact with!
+plotly::ggplotly(plt1, dynamicTicks = T)
+```
+
+## Smoothened plot
+
+plot the rolling averages now
+
+```{r avg-plot}
+
+```
+
+interactive plot now
+
+```{r avg-interactive-plt}
+plotly::ggplotly(plt_avg, dynamicTicks = T)
+```
+
+## Polish the plot
+
+Now let us polish the plot elements to be more presentable using these references
+
+1.  [ggplot2-specs](https://ggplot2.tidyverse.org/articles/ggplot2-specs.html) is a good reference to know the options that can be tweaked to change plot elements.
+2.  Refer to [colour related aesthetics](https://ggplot2.tidyverse.org/reference/aes_colour_fill_alpha.html)
+
+**Changes needed on the plot**
+
+-   Colour the line red
+
+-   Fill in the area below the trendline light red (*hint: use the same argument as you did for the line but use #FF7F7F" instead!).*
+
+-   X axis labels : add months, mentioned in the middle
+
+-   add annotation on the largest peak that says `7-day average`
+
+-   adjust the plot background and gridlines
+
+-   At the end of your ggplot add theme_bw(). *(there are a variety of different base themes you can choose from as a starting point!)*
+
+```{r polish-plot1}
+
+```
+
+## Compare to the final figure
+
+Here's the final image we're comparing to
+
+![](../assets/NYT_COVID_new_cases.png){width="497"}
+
+## Actual data that NYT plotted
+
+NYT made a few more manual corrections to the actual data that was eventually plotted. Here's a plot of the same compared to the plot you made
+
+```{r}
+
+```
