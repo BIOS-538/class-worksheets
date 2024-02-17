@@ -21,15 +21,24 @@ And another [workflow](https://nandeshwar.info/data-visualization/nyt-data-visua
 
 ## Let's load packages
 
-Load all necessary packages upfront. Remember you don't need to use the install.packages function every single time, only the first time you download a package. To check you have the package downloaded, go to Packages tab and search the package name!
+Load all necessary packages upfront.
+
+(Automated check and install for packages) If there is a package being called with `library('pkg')` or `pkg::function()` when it is not installed, Rstudio automatically prompts above that the package is not installed. So you can quickly install in by clicking on the `install` button here
+
+![](../assets/package_install_warning.png)
+
+(*old school method*): If using the `install.packages` command within a `R` chunk in `.qmd`, remember you don't want to run the install.packages every single time, only the first time to download the package. Comment the install.packages to prevent it from being rerun every time you knit/Render the `.qmd` while leaving a record of what was installed for future readers of the file.
+
+*Side note*: To check that you have the package downloaded, go to `Packages` tab and search the package name!
 
 ```{r load-packages, warning = FALSE, message = FALSE}
-source('0.general_functions.R') # source an R script with shortcut functions
+# source('0.general_functions.R') # source an R script with shortcut functions
 
 library(tidyverse) # load tidyverse package
 
+# Make sure you have these two packages installed
 # install_or_load_library('zoo') # package for timeseries: rolling avg function
-install_or_load_library('plotly') # for quick interactive plots
+# install_or_load_library('plotly') # for quick interactive plots
 ```
 
 ## Load data now
