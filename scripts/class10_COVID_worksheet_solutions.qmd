@@ -23,13 +23,13 @@ And another [workflow](https://nandeshwar.info/data-visualization/nyt-data-visua
 
 Load all necessary packages upfront.
 
-(Automated check and install for packages) If there is a package being called with `library('pkg')` or `pkg::function()` when it is not installed, Rstudio automatically prompts above that the package is not installed. So you can quickly install in by clicking on the `install` button here
+(***Automated check to install packages***) If there is a package being called with `library('pkg')` or `pkg::function()` when it is not installed, Rstudio automatically prompts above that the package is not installed. So you can quickly install in by clicking on the `install` button here
 
 ![](../assets/package_install_warning.png)
 
 (*old school method*): If using the `install.packages` command within a `R` chunk in `.qmd`, remember you don't want to run the install.packages every single time, only the first time to download the package. Comment the install.packages to prevent it from being rerun every time you knit/Render the `.qmd` while leaving a record of what was installed for future readers of the file.
 
-*Side note*: To check that you have the package downloaded, go to `Packages` tab and search the package name!
+*Side note*: To check that you have the package downloaded, go to `Packages` tab (near `files/Plots`) and search the package name! (*loaded packages with* `library()` *will have a checkmark next to them)*
 
 ```{r load-packages, warning = FALSE, message = FALSE}
 # source('0.general_functions.R') # source an R script with shortcut functions
@@ -48,13 +48,32 @@ load data from the `.csv` file. Make sure the path matches where you stored the 
 ```{r load-data}
 df <- read_csv('../data/us_covid.csv')
 
-polished_df <- read_csv('../data/covid_rolling_avgs.csv')
+# ignore this stuff for now, this is only relevant in the end 
+# polished_df <- read_csv('../data/covid_rolling_avgs.csv')
 
 ```
 
-## Exploratory plot
+## Know thy data
 
-R makes it easy to quickly create plots to visualize data and get a general sense of it's trends. Explore the data by plotting it! On the X axis you have the date and on the Y you have the **CUMULATIVE number of cases (10\^8 is a 100 million cases!)**
+Do you know what column names are in your data?
+
+You need to quickly explore the data to know the column names, data types and approx \# of rows and columns.
+
+-   Start by clicking on the data within the `Environment` panel / use `view(df)`
+
+-   To keep the column names always visible, which is very useful while typing out the `ggplot` commands, click on the play button
+
+    ![](../assets/data_glance.png)
+
+Now let's get to know the data visually!
+
+### Exploratory plot
+
+R makes it easy to quickly create plots to visualize data and get a general sense of it's trends. Explore the data by plotting it!
+
+-   Put the `date` on the `x-axis` and
+
+-   `cases` on the `y-axis`
 
 ```{r eda_plot}
 ggplot(df, 
@@ -64,7 +83,19 @@ ggplot(df,
   geom_line()
 ```
 
+What do you notice?
+
+-   The data doesn't look anything like the graph we desire
+
+-   This is because the data is [cumulative](https://github.com/nytimes/covid-19-data/tree/master#cumulative-cases-and-deaths) =\> `cases` = *total number of cases till date*
+
+    -   We want the daily new cases and need to do `data wrangling` for calculating this
+
+![](../assets/cummulative_nyt_description.png)
+
 ## Data wrangling
+
+### cummulative -\> new cases
 
 How do you get the raw data from the cumulative data?
 
@@ -75,7 +106,9 @@ raw_df <-
   mutate(df, new_cases = c(cases[1], diff(cases)))
 ```
 
-Calculate the rolling average to smooth the data.
+### Smoothen data / rolling average (over 7 days)
+
+Calculate the rolling average to smooth the data. The goal is to remove short term fluctuations to minimize distractions/visual appeal
 
 > A rolling average (A.K.A moving average) is commonly used with [time series](https://en.wikipedia.org/wiki/Time_series "Time series") data to **smooth out short-term fluctuations** and **highlight longer-term trends** or cycles. The threshold between short-term and long-term depends on the application, and the parameters of the moving average will be set accordingly. Source: [Wikipedia](https://en.wikipedia.org/wiki/Moving_average)
 
@@ -103,27 +136,34 @@ avg_df <-
 Let's plot the data of new cases over time now. This is the number of new cases added per day! **We can create the plot and save it to a variable, this allows us to quickly access it later and add new modifications to the plot!**
 
 ```{r first-plot}
-plt1 <- raw_df %>% # save the plot to this variable so we can add stuff to it later!
-  ggplot(aes(x = date, y = new_cases)) + 
+plt1 <-  # save the plot to this variable so we can add stuff to it later!
+  ggplot(raw_df, 
+         aes(x = date, y = new_cases)) + 
+  
   geom_point() + 
   geom_line()
 
-#The ggplot is saved as a 'ggplot object' you can do things with the ggplot object such as print it or manipulate it!  
+#The ggplot is saved as a 'ggplot object' you can do things with the ggplot object such as print it or add more layers/ manipulate it!  
   plt1 %>% print()
 ```
 
-```{r interactive-plt1}
-#Plotly is a way to make dynamic ggplots that you can interact with!
-plotly::ggplotly(plt1, dynamicTicks = T)
+Plotly is a great package way to make dynamic ggplots that you can interact with by zooming, selecting subset of colours/shapes etc.
+
+For the curious, plotly is cross-platform \~ works in python/Julia/others too!
+
+```{r interactive-plot}
+# Plotly is a way to make dynamic ggplots that you can interact with!
+plotly::ggplotly(plt1, dynamicTicks = TRUE)
 ```
 
-## Smoothened plot
+## Smoothed plot
 
 plot the rolling averages now
 
 ```{r avg-plot}
-plt_avg <- avg_df %>% # save the plot to this variable so we can add stuff to it later!
-  ggplot(aes(date, avg_new_cases)) + 
+plt_avg <- # save the plot to this variable so we can add stuff to it later!
+  ggplot(avg_df,
+         aes(date, avg_new_cases)) + 
   # geom_point(size = .5) + # original plot didn't have points
   geom_line()
   
@@ -137,9 +177,11 @@ interactive plot now
 plotly::ggplotly(plt_avg, dynamicTicks = T)
 ```
 
-## Polish the plot
+## Polish the plot (bells & whistles)
 
-Now let us polish the plot elements to be more presentable using these references
+You can think of this as the cilantro or garnishing on your dish but without this your plots will only be half as useful to communicate to anyone but yourself!
+
+Now let us polish the plot elements to be more **presentable** and **explanatory** using these references
 
 1.  [ggplot2-specs](https://ggplot2.tidyverse.org/articles/ggplot2-specs.html) is a good reference to know the options that can be tweaked to change plot elements.
 2.  Refer to [colour related aesthetics](https://ggplot2.tidyverse.org/reference/aes_colour_fill_alpha.html)
@@ -148,15 +190,17 @@ Now let us polish the plot elements to be more presentable using these reference
 
 -   Colour the line red
 
--   Fill in the area below the trendline light red (*hint: use the same argument as you did for the line but use #FF7F7F" instead!).*
+    -   Fill in the area below the trendline light red (*hint: use* `geom_area()` *instead of* `geom_line()` *; and use* `fill = 'red'` *but add a transparency of 0.2 using* `alpha = 0.2`*!).*
 
--   X axis labels : add months, mentioned in the middle
+-   x-axis labels : add months, mentioned in the middle (*figure out how to do this, not in the solution script)*
 
--   add annotation on the largest peak that says `7-day average`
+-   add annotation on the largest peak that says `7-day average` . Can make more controlled/detailed annotations with the [ggforce::](https://ggforce.data-imaginist.com/index.html) package
 
--   adjust the plot background and gridlines
+-   adjust the plot background and gridlines using `theme()` family of functions
 
--   At the end of your ggplot add theme_bw(). *(there are a variety of different base themes you can choose from as a starting point!)*
+    -   Add `theme_classic()` switch to light background with no gridlines *(there are a variety of different base themes you can choose from as a starting point!)*
+
+    -   Then add your own gridlines and format numbers on the y-axis the way NYT likes them
 
 ```{r polish-plot1}
 y_axis_labels <- 1:4 * 2e5
@@ -167,11 +211,19 @@ peak_identity <- filter(avg_df,
 
 ggplot(avg_df, aes(date, avg_new_cases)) + 
   
-  # geom_point(size = .5) + # original plot didn't have points
-  geom_line(colour = 'red') + # outline with red
-  geom_area(fill = 'red', alpha = 0.2) + # fill with a transparent red
+  # replacing geom_line with geom_area to fill for visual appeal
+  geom_area(colour = 'red', # outline colour with red
+            fill = 'red', alpha = 0.2) + # fill with a transparent red
   
-  # label the peak
+  # Add a title and remove axis labels 
+  labs(title = 'New reported cases', # make y axis label as the title!
+       x = NULL, y = NULL) + # remove axis labels
+  
+  # MODIFY X-AXIS LABELS TO SHOW A FEW MONTHS
+  # I don't know how to do this, so you figure it out! 😉
+  
+  
+  # label the peak with text (opportinity to explain the y-axis detailed)
   annotate(geom = 'text', label = '7-day average',
            x = peak_identity$date[2], y = peak_identity$avg_new_cases[2]) +
   
@@ -179,9 +231,6 @@ ggplot(avg_df, aes(date, avg_new_cases)) +
   # Theme/overall appearance
   theme_classic() + # plain white background, remove all axis elements
   
-  # remove axis labels 
-  xlab(NULL) + ylab(NULL) +
-  ggtitle('New reported cases') + # make y axis label as the title!
   
   # Now add specific elements
   
@@ -213,7 +262,9 @@ Here's the final image we're comparing to
 
 NYT made a few more manual corrections to the actual data that was eventually plotted. Here's a plot of the same compared to the plot you made
 
-```{r}
+Before you run this, go back to the beginning and make sure you load the data with `polished_df <- read_csv('../data/covid_rolling_avgs.csv')` then remove the `eval=FALSE` to make the chunk run!
+
+```{r eval=FALSE}
 plt_NYT <- 
 ggplot(polished_df, aes(date, cases_avg)) + 
   
