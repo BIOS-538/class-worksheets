@@ -1,0 +1,111 @@
+---
+title: "class12 Simulations with galton board"
+format: html
+editor: visual
+---
+
+# Part 1: Simulate the galton board
+
+We shall simulate the galton board example from the video and convince ourselves that it indeed generates a normal distribution
+
+## Loading packages
+
+As usual, you know we have to load the tidyverse
+
+```{r setup}
+library(tidyverse) # for tibbles, and pipes
+```
+
+## Make a Galton random variable 
+
+This simulates 1 bump on deflector of a single ball.
+
+```{r galton_rv}
+galton_rv <- function() 
+{
+  sample(c(1, -1), 
+         size = 1, replace = TRUE) # galton r.v
+}
+```
+
+Call this `galton_rv()` function many times and convince yourself that this is indeed giving a random output
+
+```{r test_rv}
+
+```
+
+## Now calculate the sum of 5 levels of the Galton board
+
+This is the final position of **1 ball** falling onto 5 levels of the deflectors
+
+```{r galton_sum}
+#' calculate sum of `n` galton random variables
+galton_sum <- function(n) {
+  galton_series <- sample(c(1, -1), size = n, replace = TRUE)
+  sum(galton_series)
+}
+```
+
+***Note**: for making a reproducible random simulation (oxymoron?), use this once within the code before you call any random function* `set.seed(any_number)`
+
+## Iterate this for 1,000 balls
+
+```{r iterate-large}
+#| echo: true
+galton_simulation <- 
+  tibble(
+    run_number = 1:1e3,
+    outcome = 
+      replicate(n = length(run_number), 
+                expr = galton_sum(6))
+  )
+```
+
+Change the code block above to make a function which generates the tibble storing the simulation for n balls
+
+In the chunk below, run it to generate a simulation of 10,000 runs, store it within the variable `galton_huge`
+
+```{r iterate_huge}
+
+```
+
+## Plot the histogram and results
+
+Change the code below to plot the results of the 10,000 run simulation
+
+```{r plot_hist}
+#| echo: true
+ggplot(galton_simulation, mapping = aes(outcome)) +
+  
+  geom_histogram(binwidth = 1, center = 0)
+```
+
+## (extra) Redo simulation : continuous range of bump outcomes
+
+Since the +1 and -1 bumps are idealized simplifications of the bounce, let us see what happens if we change the original galton function to generate a uniform distribution between -1 and +1 (instead of discrete with only -1 and +1).
+
+Hint: use the function `runif()`
+
+Re-create the simulation and the plot above with this difference in the chunk(s) below. You can copy paste code and edit it accordingly
+
+```{r uniform-simulation}
+
+```
+
+Since all outcomes between -1 and 1 are not equally likely, *for example, you cannot get 0 unless you pass directly through the deflector.* If you would like a further challenge, you can change the random variable (a single bump) to not give any outcomes between (-0.3 to 0.3)
+
+## Final caveats
+
+In this example, the bump on each level is not independent from the bump on the next level since the angle of falling onto the deflector influences the outcome of the 2nd random variable. In theory, if you simulate the full physics of this process there is really nothing random about it, because I say
+
+> Newton doesn't play dice. God? Maybe, in the quantum world.  - Source: Prashant's wisdom
+
+## More references
+
+-   More R explanation using dice rolls : Demonstrating the central limit theorem in R, [R-bloggers](https://www.r-bloggers.com/2020/08/demonstrating-the-central-limit-theorem-in-r/)
+
+# Part 2: Sampling adventures
+
+*we will get to this later?*
+
+Now for a more realistic example, we are doing a medical experiment with a population of people but we can only make measurements on a sample of 20 individuals. This is a first set of experiment where you give a medicine to people and check if they are alive or not by measuring their heart rate
