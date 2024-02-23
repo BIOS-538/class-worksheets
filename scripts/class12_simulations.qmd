@@ -90,9 +90,35 @@ Re-create the simulation and the plot above with this difference in the chunk(s)
 
 ```{r uniform-simulation}
 
+uniform_bump <- function() runif(1, min = -1, max = 1)
+
+many_bumps <- function(n = 6) replicate(n, uniform_bump()) %>% sum()
+
+uniform_simulation <- 
+  tibble(
+    run_number = 1:1e4,
+    outcome = 
+      replicate(n = length(run_number), 
+                expr = many_bumps())
+  )
+
+
+ggplot(uniform_simulation, mapping = aes(outcome)) +
+  
+  geom_histogram(binwidth = 1, center = 0)
 ```
 
 Since all outcomes between -1 and 1 are not equally likely, *for example, you cannot get 0 unless you pass directly through the deflector.* If you would like a further challenge, you can change the random variable (a single bump) to not give any outcomes between (-0.3 to 0.3)
+
+```{r complex_bump}
+
+complex_bump <- function()
+{
+  
+  
+}
+
+```
 
 ## Final caveats
 
@@ -108,4 +134,39 @@ In this example, the bump on each level is not independent from the bump on the 
 
 *we will get to this later?*
 
-Now for a more realistic example, we are doing a medical experiment with a population of people but we can only make measurements on a sample of 20 individuals. This is a first set of experiment where you give a medicine to people and check if they are alive or not by measuring their heart rate
+Now for a more realistic example, we are doing a medical experiment with a population of people but we can only make measurements on a sample of 20 individuals. This is a first set of experiment where you give a medicine to people and check if they are alive or not by measuring their heart rate etc.
+
+To test
+
+## Our fake heart rate `population`
+
+```{r gapminder}
+gapminder <- gapminder::gapminder
+
+heartrates <- scales::rescale(gapminder$lifeExp, to = c(60, 120))
+
+# ggplot(gapminder, aes(lifeExp)) + geom_histogram() # original data is this
+
+ggplot(mapping = aes(heartrates)) + geom_histogram() # fake heartrates
+```
+
+## Sample 20 values of 'heart rates'
+
+And store their mean in a tibble. We will repeat/iterate this sampling 10,000 times
+
+```{r sampling}
+sample_and_get_mean <- function(vector = heartrates, sample_size = 20)
+{
+  sampled_data <- sample(vector, size = sample_size, replace = TRUE)
+  
+  sample_mean <- mean(sampled_data)
+}
+
+sampling_expt <- 
+  tibble(
+  iteration = 1:1e4,
+  sample_mean = replicate(
+    
+  )
+)
+```
