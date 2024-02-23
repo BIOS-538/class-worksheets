@@ -114,9 +114,50 @@ Since all outcomes between -1 and 1 are not equally likely, *for example, you ca
 
 complex_bump <- function()
 {
+  unif_value <- uniform_bump()
   
+  # Now change the values if between -0.3 to 0.3
+  if(abs(unif_value) < 0.3) { # if between -0.3 and 0.3
+    if(unif_value < 0) final_value <- -0.3 # push to the left if negative
+    if(unif_value > 0) final_value <- 0.3 # push to the right if positive
+    if(unif_value == 0) final_value <- complex_bump() # if exactly center, bounce another time
+    
+  } else final_value <- unif_value
+  
+  return(final_value) # return the changed value when the function is called
   
 }
+
+# test the r.v. outcome
+complex_simulation <- 
+  tibble(
+    run_number = 1:1e3,
+    outcome = 
+      replicate(n = length(run_number), 
+                expr = complex_bump())
+  )
+
+ggplot(complex_simulation, mapping = aes(outcome)) +
+  
+  geom_histogram(center = 0)
+
+```
+
+```{r many-complex-bump}
+many_complex_bumps <- function(n = 6) replicate(n, complex_bump()) %>% sum()
+
+many_complex_simulation <-
+  tibble(
+    run_number = 1:1e4,
+    outcome =
+      replicate(n = length(run_number),
+                expr = many_complex_bumps())
+  )
+
+
+ggplot(many_complex_simulation, mapping = aes(outcome)) +
+
+  geom_histogram(binwidth = 1, center = 0)
 
 ```
 
