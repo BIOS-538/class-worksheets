@@ -1,0 +1,111 @@
+---
+title: "Review Session"
+format: html
+editor: visual
+---
+
+## Review session
+
+### Before we get into coding practice, lets think about some more theory/basic knowledge questions. Write 1-2 sentences for each in your OWN words.
+
+1.  *What is a package? What different ways can you download it? What is proper form for loading packages in an R script?*
+
+2.  *What is a directory?*
+
+3.  *What is a function? What is source code?*
+
+4.  *What is the pipe operator %\>%?*
+
+5.  *How can errors help you de-bug your code?*
+
+6.  *Why do we leave comments on code?*
+
+7.  *What is data wrangling?*
+
+8.  *Describe the different distributions that we have learned in class.*
+
+Now we will work with data and questions from this source.
+
+<https://tavareshugo.github.io/r-intro-tidyverse-gapminder/10-data_vis_partII/index.html>
+
+We will be using the gapminder data again! By the way, it is called gapminder because it attempts to provide data that fills the gap in knowledge that people have about developing countries. It is called "gapminder" after the London underground safety slogan "mind the gap". For this set of questions, we will combine a few different datasets regarding children per women, child mortality, and population.
+
+```{r loading libraries}
+library(tidyverse)
+library(gapminder)
+library(patchwork)
+```
+
+For the R code block below and all others, add a description after the r in the brackets to help with de-bugging. The description should be about what the code block does. We first need to read the csv in.
+
+```{r bringing in data}
+
+gapminder2010 <- read_csv("../Data/gapminder2010_socioeconomic.csv")
+```
+
+Now let's make an initial graph of child mortality vs. children_per women, sized by population and colored by world region. Assign this graph to an object name.
+
+```{r inital graphing}
+p1 <- ggplot(data = gapminder2010, 
+       aes(x = child_mortality, y = children_per_woman)) +
+  geom_point(aes(colour = world_region, size = population)) +
+  scale_colour_brewer(palette = "Dark2") +
+  scale_size_continuous(trans = "log10")
+
+```
+
+Describe what patterns you see in the data. Use 2-3 sentences.
+
+Now let’s create a new table containing the countries with the highest and lowest incomes in each world region (we can use a grouped filter for this): We will need to remove some NA values.
+
+```{r highest and lowest incomes}
+extreme_income <- gapminder2010 %>% 
+  # remove missing values in this variable, and then...
+  filter(!is.na(income_per_person)) %>% 
+  # group by world region, and then...
+  group_by(world_region) %>% 
+  # retain cases that have the maximum or minimum income observed, and then...
+  filter(income_per_person == max(income_per_person) | income_per_person == min(income_per_person)) %>% 
+  # remove grouping information
+  ungroup()
+
+# we have 12 rows of data in this filtered table
+# makes sense as we expect to have a min and max for each of 6 world regions
+extreme_income
+```
+
+Now let's label our previous graph with these extremes.
+
+```{r labeling extremes}
+p1 + 
+  geom_text(data = extreme_income,
+            aes(label = country))
+```
+
+Now customize your graph and make it look pretty. Change title names, remove grey background, change colors. Resize the points to make it easier to tell them apart. See [here](https://www.maths.usyd.edu.au/u/UG/SM/STAT3022/r/current/Misc/data-visualization-2.1.pdf) for cheat sheet. Write 1-3 sentences describing the data.
+
+```{r customizing graph}
+
+```
+
+In an attempt to further understand the data, write a function that takes the name of a country as an argument and returns how many children above the global average that women in that country have. For example, if the global average is 1 child, and the country you call has an average children_per_women value of 3, then this function should return the value 2. Try this function with five different countries to check if it worked.
+
+```{r function for information about countries}
+
+country_info <- function(country_name) {
+  
+}
+
+```
+
+### Now, lets work more on data wrangling as it is crucial to understand!
+
+more things to hit
+
+-for loops
+
+-if then statements
+
+-the mutate function
+
+-whatever stats we get thru
