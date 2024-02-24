@@ -16,7 +16,7 @@ As usual, you know we have to load the tidyverse
 library(tidyverse) # for tibbles, and pipes
 ```
 
-## Make a Galton random variable 
+## Make a Galton random variable
 
 This simulates 1 bump on deflector of a single ball.
 
@@ -146,6 +146,7 @@ ggplot(complex_simulation, mapping = aes(outcome)) +
 ```{r many-complex-bump}
 many_complex_bumps <- function(n = 6) replicate(n, complex_bump()) %>% sum()
 
+
 many_complex_simulation <-
   tibble(
     run_number = 1:1e4,
@@ -161,11 +162,65 @@ ggplot(many_complex_simulation, mapping = aes(outcome)) +
 
 ```
 
+## Sampling from exponential distribution r.v.
+
+If the random variable's original distribution is very uneven (far from uniform and normal), I am curious to see how many of these r.v's would we need to add to see something close to normal?
+
+```{r exponential-rv}
+# complex_bump <- function()
+# {
+#   unif_value <- uniform_bump()
+#   
+#   # Now change the values if between -0.3 to 0.3
+#   if(abs(unif_value) < 0.3) { # if between -0.3 and 0.3
+#     if(unif_value < 0) final_value <- -2 # push to the left if negative
+#     if(unif_value > 0) final_value <- 2 # push to the right if positive
+#     if(unif_value == 0) final_value <- complex_bump() # if exactly center, bounce another time
+#     
+#   } else final_value <- unif_value
+#   
+#   return(final_value) # return the changed value when the function is called
+#   
+# }
+
+# test the r.v. outcome
+exp_simulation <- 
+  tibble(
+    run_number = 1:1e3,
+    outcome = 
+      replicate(n = length(run_number), 
+                expr = rexp(1))
+  )
+
+ggplot(exp_simulation, mapping = aes(outcome)) +
+  
+  geom_histogram(center = 0)
+```
+
+```{r many-exp-bumps}
+many_exp_bumps <- function(n = 6) replicate(n, rexp(n)) %>% sum()
+
+
+many_exp_simulation <-
+  tibble(
+    run_number = 1:1e4,
+    outcome =
+      replicate(n = length(run_number),
+                expr = many_exp_bumps())
+  )
+
+
+ggplot(many_exp_simulation, mapping = aes(outcome)) +
+
+  geom_histogram(binwidth = 1, center = 0)
+
+```
+
 ## Final caveats
 
 In this example, the bump on each level is not independent from the bump on the next level since the angle of falling onto the deflector influences the outcome of the 2nd random variable. In theory, if you simulate the full physics of this process there is really nothing random about it, because I say
 
-> Newton doesn't play dice. God? Maybe, in the quantum world.  - Source: Prashant's wisdom
+> Newton doesn't play dice. God? Maybe, in the quantum world. - Source: Prashant's wisdom
 
 ## More references
 
