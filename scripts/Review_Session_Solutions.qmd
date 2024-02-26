@@ -94,28 +94,73 @@ p2 + labs(x = "Child Mortality",
   theme_bw()
 ```
 
-In an attempt to further understand the data, write a function that takes the name of a country as an argument and returns how many children above the global average that women in that country had. For example, if the global average is 1 child, and the country you call has an average children_per_women value of 3, then this function should return the value 2. Try this function with five different countries to check if it worked. **Remember you need to exclude NAs!**
+Now let's write a for loop that tells us what the religion of all the countries from a certain world_region are as a character string. For example: "Vietnam is religion is: eastern religions." Make sure to subset by world region first outside of the for loop! write the function first!
+
+```{r}
+region <- gapminder2010 %>%
+  filter(world_region == "east_asia_pacific")
+
+for (i in 1:nrow(region)){
+    cat('The religion of', region$country[[i]], "is", region$main_religion[[i]], '\n')
+} 
+```
+
+You may notice that some of the countries have NA for a relgion! Can you write an if else statement with the for loop where the NA is replaced with unknown?
+
+```{r}
+region <- gapminder2010 %>%
+  filter(world_region == "east_asia_pacific")
+
+for (i in 1:nrow(region)){
+  if(is.na(region$main_religion[[i]]) == FALSE) {
+    cat('The religion of', region$country[[i]], "is", region$main_religion[[i]], '\n')
+  } else {
+  cat('The religion of', region$country[[i]], "is unknown\n")
+  }
+}
+```
+
+### Now, lets work more on data wrangling as it is crucial to understand!
+
+In an attempt to further understand the data, Create a new column 'cpw_mean_diff' that takes the mean children per woman and returns how many children **above or below** the global average that women in that country had. For example, if the global average is 1 child, and the country you call has an average children_per_women value of 3, then this function should return the value 2. **Remember some countries have NAs for values in this column so you need to exclude them! Use na.rm = TRUE**
 
 ```{r function for information about countries}
 #First let's calculate the mean children_per_woman
 global_mean_cpw <- gapminder2010 %>% mean(na.omit(gapminder2010$children_per_woman))
 
 #This function will take the dataframe and global_mean_cpw as input and return a new column of the data set of how many additional children woman have
-cpw_above_mean <- function(x) {
-  gapminder2010 %>%
-    mutate(cpw_above_mean = children_per_woman )
-}
+
+gapminder2010 <- gapminder2010 %>%
+  mutate(cpw_mean_diff = 
+           children_per_woman - mean(children_per_woman, na.rm = TRUE))
 
 ```
 
-### Now, lets work more on data wrangling as it is crucial to understand!
+Create a histogram of the distribution of the cpw_mean_diff column. Then try this and then use the facet() function to create separate histograms for each world region! Add a horizontal line at 0 to illustrate how many countries fall below and above the mean. Based on the distribution what information can we learn?
 
-more things to hit
+```{r histogram}
+gapminder2010 %>%
+  ggplot(aes(x = cpw_mean_diff)) + 
+  geom_histogram(fill = "black", colour = "grey") +
+  geom_vline(xintercept = 0, color = "red") + 
+  theme_bw()
+```
 
--for loops
+```{r faceted histogram}
+gapminder2010 %>%
+  ggplot(aes(x = cpw_mean_diff, fill = world_region)) + 
+  geom_histogram(colour = "grey") +
+  geom_vline(xintercept = 0, color = "red") +
+  facet_wrap(~world_region) +
+  theme_bw()
+```
 
--if then statements
+Now let's create a new data frame that has the median population and the standard deviation based on world region! **Remember to use group_by() and summarise!** Show the table with the knitr package! Try it now with mean, why do you think we chose median first?
 
--the mutate function
-
--whatever stats we get thru
+```{r summary of world_regions}
+ gapminder2010 %>%
+  group_by(world_region) %>%
+  summarise(median.pop = median(population, na.rm = TRUE),
+            sd.pop = sd(population, na.rm = TRUE)) %>%
+   knitr::kable()
+```
