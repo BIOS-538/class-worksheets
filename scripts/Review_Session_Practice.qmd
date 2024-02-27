@@ -1,0 +1,107 @@
+---
+title: "Review Session"
+format: html
+editor: visual
+---
+
+## Review session
+
+### Before we get into coding practice, lets think about some more theory/basic knowledge questions. Write 1-2 sentences for each in your OWN words.
+
+1.  *What is a package? What different ways can you download it? What is proper form for loading packages in an R script?*
+
+2.  *What is a directory?*
+
+3.  *What is a function? What is source code?*
+
+4.  *What is purpose of the pipe operator %\>%?*
+
+5.  *How can errors help you de-bug your code?*
+
+6.  *Why do we leave comments on code?*
+
+7.  *What is data wrangling?*
+
+8.  *Describe the different distributions that we have learned in class.*
+
+Now we will work with data and questions from this source.
+
+<https://tavareshugo.github.io/r-intro-tidyverse-gapminder/10-data_vis_partII/index.html>
+
+We will be using the gapminder data again! By the way, it is called gapminder because **it attempts to provide data that fills the gap in knowledge that people have about developing countries**. It is called "gapminder" after the London underground safety slogan "mind the gap". For this set of questions, we will combine a few different datasets regarding children per women, child mortality, and population.
+
+```{r loading libraries}
+library(tidyverse)
+library(gapminder)
+library(patchwork)
+```
+
+For the R code block below and all others, add a descriptive name after the 'r' in the code brackets. This will name the code chunk so that if the code doesn't execute when you render the file R will tell you exactly which code chunk didn't work! This will help with de-bugging. The description should be about what the code block does. We first need to read the csv in.
+
+```{r}
+#remember to write the correct directory!
+#This will be different for everyone!
+gapminder2010 <- read_csv()
+```
+
+Now let's make an initial plot of child_mortality vs. children_per_woman, sized by population and colored by world region. Put child_mortality on the x axis and children_per_woman on the y axis. Assign this graph to an object name. To change the size of each point based on population, add: *scale_size_continuous(trans = "log10")* after geom_point()
+
+```{r}
+
+```
+
+Describe what patterns you see in the data. Use 2-3 sentences:
+
+Now let’s create a new table containing the countries with the highest and lowest incomes in each world region (we can use a grouped filter for this): We will need to remove some NA values.
+
+```{r}
+
+```
+
+Now let's label our previous graph with these extremes.
+
+```{r labeling extremes}
+
+```
+
+Now customize your graph and make it look pretty. Change title names, remove grey background, change colors. Resize the points to make it easier to tell them apart. See [here](https://www.maths.usyd.edu.au/u/UG/SM/STAT3022/r/current/Misc/data-visualization-2.1.pdf) for cheat sheet. Write 1-3 sentences describing the data.
+
+```{r}
+
+```
+
+Now let's write a for loop that tells us what the religion of all the countries from a certain world_region are as a character string. For example: "Vietnam is religion is: eastern religions." Make sure to subset by world region first outside of the for loop! write the function first!
+
+```{r}
+
+```
+
+You may notice that some of the countries have NA for a relgion! Can you write an if else statement with the for loop where the NA is replaced with unknown?
+
+```{r}
+
+```
+
+### Now, lets work more on data wrangling as it is crucial to understand!
+
+In an attempt to further understand the data, Create a new column 'cpw_mean_diff' that takes the mean children per woman and returns how many children **above or below** the global average that women in that country had. For example, if the global average is 1 child, and the country you call has an average children_per_women value of 3, then this function should return the value 2. **Remember some countries have NAs for values in this column so you need to exclude them! Use na.rm = TRUE**
+
+```{r function for information about countries}
+
+```
+
+Create a histogram of the distribution of the cpw_mean_diff column. Then try this and then use the facet() function to create separate histograms for each world region! Add a horizontal line at 0 to illustrate how many countries fall below and above the mean. Based on the distribution what information can we learn?
+
+```{r histogram}
+
+```
+
+```{r faceted histogram}
+
+```
+
+Now let's create a new data frame that has the median population and the standard deviation based on world region! **Remember to use group_by() and summarise!** Show the table with the knitr package! Try it now with mean, why do you think we chose median first?
+
+```{r summary of world_regions}
+ 
+```
