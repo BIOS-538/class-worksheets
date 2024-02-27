@@ -50,7 +50,9 @@ p1 <- ggplot(data = gapminder2010,
        aes(x = child_mortality, y = children_per_woman)) +
   geom_point(aes(colour = world_region, size = population)) +
   scale_colour_brewer(palette = "Dark2") +
-  scale_size_continuous(trans = "log10")
+  <- scale_size_continuous(trans = "log10")
+
+p1
 
 ```
 
@@ -94,7 +96,19 @@ p2 + labs(x = "Child Mortality",
   theme_bw()
 ```
 
-Now let's write a for loop that tells us what the religion of all the countries from a certain world_region are as a character string. For example: "Vietnam is religion is: eastern religions." Make sure to subset by world region first outside of the for loop! write the function first!
+Now let's write a for loop that tells us what the religion of all the countries from a certain world_region are as a character string. For example: "The religion of Vietnam is: eastern religions." Make sure to subset by world region first outside of the for loop! write the function first!
+
+PSUEDOCODE
+
+I want to take my data and filter it by each region.
+
+Then I want to run a for loop of some sort. I should use for() to go thru my data step by step and the cat() function to combine things I think.
+
+In order to do this, I think I will need to index by something.
+
+for (i in something) {
+
+}
 
 ```{r}
 region <- gapminder2010 %>%
@@ -113,8 +127,11 @@ region <- gapminder2010 %>%
 
 for (i in 1:nrow(region)){
   if(is.na(region$main_religion[[i]]) == FALSE) {
-    cat('The religion of', region$country[[i]], "is", region$main_religion[[i]], '\n')
-  } else {
+    cat('The religion of', region$country[[i]], "is", region$main_religion[[i]], '\n')} 
+  if(region$main_religion[[i]] == "christian") {
+    print("okay")
+  }
+  else {
   cat('The religion of', region$country[[i]], "is unknown\n")
   }
 }
@@ -126,7 +143,7 @@ In an attempt to further understand the data, Create a new column 'cpw_mean_diff
 
 ```{r function for information about countries}
 #First let's calculate the mean children_per_woman
-global_mean_cpw <- gapminder2010 %>% mean(na.omit(gapminder2010$children_per_woman))
+global_mean_cpw <- mean(gapminder2010$children_per_woman, na.rm=TRUE)
 
 #This function will take the dataframe and global_mean_cpw as input and return a new column of the data set of how many additional children woman have
 
