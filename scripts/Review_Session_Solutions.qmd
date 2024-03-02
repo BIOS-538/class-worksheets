@@ -58,7 +58,7 @@ p1
 
 Describe what patterns you see in the data. Use 2-3 sentences:
 
-Now let’s create a new table containing the countries with the highest and lowest incomes in each world region (we can use a grouped filter for this): We will need to remove some NA values.
+Now let's create a new table containing the countries with the highest and lowest incomes in each world region (we can use a grouped filter for this): We will need to remove some NA values.
 
 ```{r highest and lowest incomes}
 #Could use slice_max() and slice_min()
@@ -121,7 +121,7 @@ for (i in 1:nrow(region)){
 
 You may notice that some of the countries have NA for a relgion! Can you write an if else statement with the for loop where the NA is replaced with unknown?
 
-```{r}
+```{r for-if-else}
 region <- gapminder2010 %>%
   filter(world_region == "east_asia_pacific")
 
