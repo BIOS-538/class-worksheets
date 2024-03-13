@@ -1,0 +1,53 @@
+---
+title: "class13_sampling"
+format: html
+editor: visual
+---
+
+## Load package
+
+```{r loading-packages}
+library(tidyverse)
+library(moderndive)
+```
+
+```{r look-at-data}
+bowl
+
+virtual_shovel <- bowl %>% 
+  rep_sample_n(size = 500, reps = 1000)
+
+
+#' calculate the fraction of red balls
+#' @params a vector of cooours
+#' @output numeric fraction value
+calc_red <- function (colour_vector) 
+  {
+    (colour_vector == 'red') %>% 
+      sum() %>% 
+    {. / length(colour_vector)}
+  }
+  
+# test the function
+bowl$color %>% head(10) %>% calc_red  
+
+virtual_red_shovels <- 
+  group_by(virtual_shovel, replicate) %>% 
+  
+  summarise(red_fraction = calc_red(color))
+
+# plot the sampling distribution of the red fractoin
+ggplot(virtual_red_shovels, aes(red_fraction)) + 
+  geom_density() + 
+  
+  geom_vline(aes(xintercept = mean(virtual_red_shovels$red_fraction)), colour = 'red') + 
+  
+  geom_vline(aes(xintercept = mean(virtual_red_shovels$red_fraction) + sd(virtual_red_shovels$red_fraction)), colour = 'red') + 
+  
+  stat_summary(aes(y = 0.04, xintercept = after_stat(x)), 
+               fun = quantile, 
+               # fun.args = list(probs = c(0.025, 0.975)), 
+               geom = "vline", 
+               alpha = 0.8, linetype = 2,
+               orientation = "y")
+```
