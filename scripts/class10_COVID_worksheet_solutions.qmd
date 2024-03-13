@@ -25,7 +25,7 @@ Load all necessary packages upfront.
 
 (***Automated check to install packages***) If there is a package being called with `library('pkg')` or `pkg::function()` when it is not installed, Rstudio automatically prompts above that the package is not installed. So you can quickly install in by clicking on the `install` button here
 
-![](../assets/package_install_warning.png)
+![](../assets/package_install_warning.png){width="629"}
 
 (*old school method*): If using the `install.packages` command within a `R` chunk in `.qmd`, remember you don't want to run the install.packages every single time, only the first time to download the package. Comment the install.packages to prevent it from being rerun every time you knit/Render the `.qmd` while leaving a record of what was installed for future readers of the file.
 
