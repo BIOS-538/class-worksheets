@@ -1,0 +1,42 @@
+---
+title: "T-test Worksheet"
+author: "Sam Schwartz"
+format: html
+editor: visual
+---
+
+## T-tests with real data!
+
+Today we are going to show you two different datasets
+
+## Running Code
+
+When you click the **Render** button a document will be generated that includes both content and the output of embedded code. You can embed code like this:
+
+`{library(tidyverse)}`
+
+You can add options to executable code like this
+
+```{r load data, warning = FALSE}
+#This is a dataset on Union Membership in the US in the last 50 years. Could be interesting to compare by state/region or time
+tuesdata <- tidytuesdayR::tt_load(2023, week = 36)
+```
+
+```{r library}
+#This is a data frame of Taylor's Swifts Songs on Spotify by different quantitative spotify metrics
+Tswiftdata <- tidytuesdayR::tt_load('2023-10-17')
+spotifytswiftdata <- Tswiftdata[[1]]
+rm(Tswiftdata)
+```
+
+```{r}
+Tswift_sum <- spotifytswiftdata %>%
+  group_by(album_name) %>%
+  summarise(across(danceability:duration_ms, ~mean(.x, na.rm = TRUE)))
+```
+
+```{r}
+spotifytswiftdata %>%
+  ggplot(aes(x = as.factor(album_name), y = loudness)) + 
+  geom_boxplot()
+```
