@@ -38,7 +38,7 @@ iris <- iris # get dataset into environment
 Apart from the identifiers, we only need the `Sepal.Length` column. And we need to `filter` out only 2 species: `virginica` and `versicolor`. We need only 2 species *since t-test can only compare 2 things ; for more explore doing ANOVA below)*
 
 ```{r data-wrangle}
-
+# finished data wrangling
 ```
 
 ## Do a t-test
