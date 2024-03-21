@@ -1,0 +1,240 @@
+---
+title: "PCA"
+author: "Annie"
+format: html
+editor: visual
+---
+
+## PCA Analysis
+
+Great now that we are in R we can work through PCA Analysis together. If you fall behind, check this source for what we are working through: [Link](https://allisonhorst.github.io/palmerpenguins/articles/pca.html)
+
+```{r loading libraries}
+# source for this nice way to check packages needed: https://statsandr.com/blog/an-efficient-way-to-install-and-load-r-packages/
+
+# Package names
+packages <- c("palmerpenguins","corrr","GGally","recipes","tidytext","dplyr","tidyr","ggplot2")
+
+# Install packages not yet installed
+installed_packages <- packages %in% rownames(installed.packages())
+if (any(installed_packages == FALSE)) {
+  install.packages(packages[!installed_packages])
+}
+
+# Packages loading
+invisible(lapply(packages, library, character.only = TRUE))
+
+# Setting the theme for pretty plots
+theme_set(theme_minimal())
+```
+
+### First, lets describe the data of the penguins dataset
+
+::: {style="color: teal"}
+Write 1-3 sentences here describing the data.
+:::
+
+### Okay now we are going to look at a correlation matrix of our data.
+
+```{r correlation}
+penguins_corr <- penguins %>%
+  dplyr::select(body_mass_g, ends_with("_mm")) %>%
+  correlate() %>%
+  rearrange()
+penguins_corr
+```
+
+#### What correlations do we see?
+
+::: {style="color: teal"}
+Body mass and flipper length appear highly correlated, but neither of the bill variables appears to be as highly correlated with any other variables.
+:::
+
+### Let's visualize these correlations
+
+```{r pairwise plot matrix}
+penguins %>%
+  select(species, body_mass_g, ends_with("_mm")) %>% 
+  GGally::ggpairs(aes(color = species),
+          columns = c("flipper_length_mm", "body_mass_g", 
+                      "bill_length_mm", "bill_depth_mm")) +
+  scale_colour_manual(values = c("darkorange","purple","cyan4")) +
+  scale_fill_manual(values = c("darkorange","purple","cyan4"))
+```
+
+### PCA Time!
+
+```{r}
+# Recipe function lets us normalize dataset efficently
+library(recipes)
+penguin_recipe <-
+  recipe(~., data = penguins) %>% 
+  update_role(species, island, sex, year, new_role = "id") %>% 
+  step_naomit(all_predictors()) %>% 
+  step_normalize(all_predictors()) %>%
+  step_pca(all_predictors(), id = "pca") %>% 
+  prep()
+
+penguin_pca <- 
+  penguin_recipe %>% 
+  tidy(id = "pca") 
+
+penguin_pca
+
+# The value column here is the loading. For each component, the value tells us the linear combination of weights for each variable that contributes to that component.
+```
+
+#### Now we examine the output of the PCA
+
+```{r output of PCA}
+# this makes the output a little easier to visualize. This shows the weight of each predictor in the principal components 
+penguins %>% 
+  dplyr::select(body_mass_g, ends_with("_mm")) %>% 
+  tidyr::drop_na() %>% 
+  scale() %>% 
+  prcomp() %>%  
+  .$rotation
+```
+
+```{r visualizing % of variance that each component accounts for in the data}
+penguin_recipe %>% 
+  tidy(id = "pca", type = "variance") %>% 
+  dplyr::filter(terms == "percent variance") %>% 
+  ggplot(aes(x = component, y = value)) + 
+  geom_col(fill = "#b6dfe2") + 
+  xlim(c(0, 5)) + 
+  ylab("% of total variance")
+```
+
+### Now we are going to plot the loadings
+
+```{r plot the loadings}
+library(ggplot2)
+penguin_pca %>%
+  mutate(terms = tidytext::reorder_within(terms, 
+                                          abs(value), 
+                                          component)) %>%
+  ggplot(aes(abs(value), terms, fill = value > 0)) +
+  geom_col() +
+  facet_wrap(~component, scales = "free_y") +
+  tidytext::scale_y_reordered() +
+  scale_fill_manual(values = c("#b6dfe2", "#0A537D")) +
+  labs(
+    x = "Absolute value of contribution",
+    y = NULL, fill = "Positive?"
+  ) 
+```
+
+Let's talk about these loadings.
+
+#### Biplot time!
+
+```{r plot PCA}
+# get pca loadings into wider format for plotting
+pca_wider <- penguin_pca %>% 
+  tidyr::pivot_wider(names_from = component, id_cols = terms)
+
+# define arrow style
+arrow_style <- arrow(length = unit(.05, "inches"),
+                     type = "closed")
+
+
+pca_plot <-
+  juice(penguin_recipe) %>%
+  ggplot(aes(PC1, PC2)) +
+  geom_point(aes(color = species, shape = species), 
+             alpha = 0.8, 
+             size = 2) + 
+  stat_ellipse((aes(color = species, shape = species))) +
+  scale_colour_manual(values = c("darkorange","purple","cyan4")) 
+
+pca_plot +
+  geom_segment(data = pca_wider,
+               aes(xend = PC1, yend = PC2), 
+               x = 0, 
+               y = 0, 
+               arrow = arrow_style) + 
+  geom_text(data = pca_wider,
+            aes(x = PC1, y = PC2, label = terms), 
+            hjust = 0, 
+            vjust = 1,
+            size = 5, 
+            color = '#0A537D') 
+```
+
+First, if you focus on the x-axis showing us the first principal component, you can see that flipper length and body mass are very important (confirming what we saw in the above bar chart). Along this dimension, Gentoo penguins stand out clearly from the other two species. We can confirm this looking at summary statistics
+
+```{r summary stats and scatterplot}
+penguins %>% 
+  group_by(species) %>% 
+  summarize(across(c(flipper_length_mm, body_mass_g), 
+                   mean, 
+                   na.rm = TRUE)) 
+
+
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g, colour = species)) +
+  geom_point() +
+  scale_colour_manual(values = c("darkorange","purple","cyan4")) 
+```
+
+If you now focus more on the y-axis showing us the second principal component, you can see that our two bill size variables, `bill_length_mm` and `bill_depth_mm`, are very important (again, confirming what we saw in the above bar chart).
+
+Let’s do the same thing for principal component 2 and 3.
+
+```{r plot for PC2 and PC3}
+pca_plot %+% 
+  aes(PC2, PC3) +
+  geom_segment(data = pca_wider,
+               aes(xend = PC2, yend = PC3), 
+               x = 0, 
+               y = 0, 
+               arrow = arrow_style) + 
+  stat_ellipse((aes(color = species, shape = species))) +
+  geom_text(data = pca_wider,
+            aes(x = PC2, y = PC3, label = terms), 
+            hjust = 0, 
+            vjust = 1,
+            size = 5, 
+            color = '#0A537D') 
+```
+
+We see again that PC2 seems most associated with our bill size variables, `bill_length_mm` and `bill_depth_mm`. But now we can see more clearly that this dimension seems to separate Chinstrap penguins from the other two species. We can confirm this by glancing at summary statistics again by species:
+
+```{r summary stats and scatterplot again}
+penguins %>% 
+  group_by(species) %>% 
+  summarize(across(c(bill_depth_mm, bill_length_mm), 
+                   mean, 
+                   na.rm = TRUE))
+
+ggplot(penguins, aes(x = bill_length_mm, y = bill_depth_mm, colour = species)) +
+  geom_point() +
+  scale_colour_manual(values = c("darkorange","purple","cyan4")) 
+```
+
+### Note that there are base R PCA functions that can be used as well
+
+<https://www.datacamp.com/tutorial/pca-analysis-r>
+
+```{r other pca functions}
+?princomp()
+?prcomp()
+
+# Load the data
+library(tidyverse)
+
+# run PCA
+USArrests
+results <- prcomp(USArrests, scale = TRUE)
+
+# scree plot
+screeplot(results)
+
+# Visualize the results with a biplot
+biplot(results, scale = 0)
+
+# Find variance explained by each principal component
+results$sdev^2 / sum(results$sdev^2) 
+
+
+```

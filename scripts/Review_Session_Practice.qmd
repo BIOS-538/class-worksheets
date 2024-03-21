@@ -28,7 +28,7 @@ Now we will work with data and questions from this source.
 
 <https://tavareshugo.github.io/r-intro-tidyverse-gapminder/10-data_vis_partII/index.html>
 
-We will be using the gapminder data again! By the way, it is called gapminder because **it attempts to provide data that fills the gap in knowledge that people have about developing countries**. It is called "gapminder" after the London underground safety slogan "mind the gap". For this set of questions, we will combine a few different datasets regarding children per women, child mortality, and population.
+We will be using the gapminder data again! By the way, it is called gapminder because **it attempts to provide data that jfills the gap in knowledge that people have about developing countries**. It is called "gapminder" after the London underground safety slogan "mind the gap". For this set of questions, we will combine a few different datasets regarding children per women, child mortality, and population.
 
 ```{r loading libraries}
 library(tidyverse)
