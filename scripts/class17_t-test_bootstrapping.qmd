@@ -33,7 +33,7 @@ library(tidyverse) # data manipulation + plotting
 iris <- iris # get dataset into environment
 ```
 
-## Processing data aka data wrangling
+## Processing data a.k.a. data wrangling
 
 Apart from the identifiers, we only need the `Sepal.Length` column. And we need to `filter` out only 2 species: `virginica` and `versicolor`. We need only 2 species *since t-test can only compare 2 things ; for more explore doing ANOVA below)*
 
@@ -43,7 +43,7 @@ Apart from the identifiers, we only need the `Sepal.Length` column. And we need 
 
 ## Do a t-test
 
-Use the R function `t.test()` to do a t-test. Explore the parameters within the code and see how the P-values change when you change them. Important one is the `alternative` ; try going between `two-sided`, `less` and `greater` and understand the results
+Use the R function `t.test()` to do a t-test. Explore the parameters within this function and see how the P-values change when you change them. Important one is the `alternative` ; try going between `two-sided`, `less` and `greater` and understand the results
 
 ```{r}
 
@@ -90,4 +90,4 @@ You want to area under the subset of the histogram where 0 intersects
 
 ## Doing this quicker using `moderndive` functions
 
-I don't know how to do this yet, but this [moderndive textbook ](https://moderndive.com/7-sampling.html#what-proportion-of-this-bowls-balls-are-red)might help both of us figure it out!
+I don't know how to do this yet, but this [moderndive textbook](https://moderndive.com/7-sampling.html#what-proportion-of-this-bowls-balls-are-red)might help both of us figure it out!

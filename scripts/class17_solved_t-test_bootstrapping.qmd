@@ -1,0 +1,208 @@
+---
+title: "class17: t-tests and bootstrapping t-tests"
+format: html
+editor: visual
+---
+
+## We are working with iris data
+
+Familiarize yourself with the [data](https://www.statology.org/iris-dataset-r/)!
+
+::: aside
+We will use `iris` data. We are interesting the `sepal.length` column, and it's difference across 2 different species
+
+Sources: [flower image](http://www.sunnysimplelife.com/2012/03/spring.html) ; [flower diagram](https://en.wikipedia.org/wiki/Sepal)
+:::
+
+::: columns
+::: {.column width="50%"}
+![](../assets/iris_flower.png)
+:::
+
+::: {.column width="50%"}
+![](../assets/flower_diagram.png)
+:::
+:::
+
+## Setup
+
+Loading libraries and such
+
+```{r setup}
+library(tidyverse) # data manipulation + plotting
+iris <- iris # get dataset into environment
+```
+
+## Processing data a.k.a. data wrangling
+
+Apart from the identifiers, we only need the `Sepal.Length` column. And we need to `filter` out only 2 species: `virginica` and `versicolor`. We need only 2 species *since t-test can only compare 2 things ; for more explore doing ANOVA below)*
+
+```{r data-wrangle}
+
+iris2 <- 
+  select(iris, Sepal.Length, Species) %>% # select the required columns
+  
+  filter(str_detect(Species, 'virginica|versicolor')) %>% # filter 2 species
+  # str_detect() enables matching of strings using regular expressions
+  
+  group_by(Species) # use grouping for future bootstrapping by species
+```
+
+::: {.div style="color: firebrick"}
+the [`str_detect()`](https://stringr.tidyverse.org/reference/str_detect.html) function is one nice way of filtering for multiple column name matches using regular expression `patterns`.
+
+The alternate way to filter would be to use this (*it is more verbose!)* -
+
+`filter(Species == 'virginica' | Species == 'versicolor')`
+:::
+
+## Do a t-test
+
+Use the R function `t.test()` to do a t-test. Explore the parameters within this function and see how the P-values change when you change them. Important one is the `alternative` ; try going between `two-sided`, `less` and `greater` and understand the results
+
+```{r two-sided-t}
+t.test(Sepal.Length ~ Species, data = iris2)
+```
+
+::: {.div style="color: firebrick"}
+The very very low p-value from the t-test ( = 1e-7) implies that the two species differ statistically significantly from one another.
+
+Pay attention the `alternative hypothesis: ..` section and it will tell you if you were doing a one-sided and two-sided t-test
+
+Other numbers
+:::
+
+```{r one-sided-t}
+t.test(Sepal.Length ~ Species, data = iris2, alternative = 'less')
+```
+
+::: {.div style="color: firebrick"}
+This is a one sided t-test. What is the relationship between the p-value of this vs the two-sided t-test?
+
+-   You will find the answer in class!
+:::
+
+The `report()` function from the `{report}` package gives you a summary of many statistical tests in human interpretable language! - Source: [ANOVA-in-R/statsandr](https://hyp.is/YM2UIOUBEe6DrX_FO21x8A/statsandr.com/blog/anova-in-r/). Let's try it out!
+
+```{r spelling-out-t-test}
+# save the t-test into a variable
+one_side_t <- t.test(Sepal.Length ~ Species, data = iris2, alternative = 'less')
+
+report::report(one_side_t) # use this for a nice succinct report
+
+```
+
+### Try doing ANOVA on all 3 species!
+
+This tells you that there are atleast 2 species within the 3 that differ from each other significantly. Note: ANOVA also assumes data is normally distributed, independance and other [such stuff](https://statsandr.com/blog/anova-in-r/#underlying-assumptions-of-anova).
+
+Use this for help - <https://statsandr.com/blog/anova-in-r/>
+
+```{r anova}
+oneway.test(Sepal.Length ~ Species, data = iris)
+```
+
+## Do bootstrapping
+
+Remember: Bootstrapping involves -
+
+-   Sampling with replacement. Here you need to resample within each of the 2 species types
+
+    -   Your re-sample will be the same size as your sample!
+
+-   Calculating a summary statistic from each bootstrapped sample. The statistic in this case is the `difference in the means` of the two different species' bootstrap samples.
+
+-   Iterating this process many times. Here we will use 10,000 times
+
+::: {.span style="color: firebrick"}
+Outline of the algorithm
+
+1.  Grab the two species data separately from the data
+
+2.  Make bootstrapped data for each using `sample()` function
+
+3.  Find the mean of each bootstrapped data ; and the difference in the means
+
+4.  Now put the above (1-3) into a function
+
+5.  Run it multiple times while recording result in a tibble using a `map()` command
+:::
+
+```{r bootstrapping-function}
+#' bootstrapping function for t-tests on 2 groups
+#' 
+boot_difference_means <- function(.df = iris2,
+                                  .column = Sepal.Length,
+                                  return_which = 'diff_mean')
+{
+  .boots <- 
+    mutate(.df, 
+            bootdat = sample({{.column}}, size = n(), 
+                             replace = TRUE, ))
+  
+  # otherwise will only return the summary measurement
+  .means_boot <- summarize(.data = .boots, m = mean(bootdat))
+  
+  # calculate difference in means (Species 2 - Species 1)
+  diffmean <- .means_boot$m %>% diff()
+  
+  # if you want to see the bootstrapped data
+  if(return_which == 'boots') return(.boots)
+  
+  # if you want to see the individual means
+  if(return_which == 'individual_means') return(.means_boot)
+  
+  # to see final bootstrapping output = difference of means
+  if(return_which == 'diff_mean') return(diffmean)
+  
+  
+}
+
+# test the function once
+boot_difference_means()
+```
+
+::: {.div style="color: firebrick"}
+Quick note:
+
+To **generalize** this bootstrapping function to **any column** in any dataset, add a parameter
+
+`.column = Sepal.Length` to the function and use `{{.column}}` in place of the `Sepal.Length` like this
+
+`bootdat = sample({{.column}}, ..`
+:::
+
+Now onto the iteration 10,000 times with the above function
+
+```{r iteration}
+
+# make a numeric vector with the 10,000 values of difference betwn means
+diff_means <-
+  map_dbl(1:10000, ~ boot_difference_means())
+```
+
+## Plot histogram
+
+Show the histogram of the means of the bootstrapping exercise
+
+```{r hist}
+
+ggplot(mapping = aes(diff_means)) + geom_histogram(alpha = 0.6) + 
+  
+  # show the difference in the original sample means
+  geom_vline(aes(xintercept = 0.65), linetype = 2) + 
+  annotate(geom = 'text', x = 0.7, y = 250, label = 'Original\nvalue') +
+  
+  # show the NULL hypothesis = 0 difference between means
+  geom_vline(aes(xintercept = 0), colour = 'red') + 
+  annotate(geom = 'text', x = 0.1, y = 250, 
+           label = 'NULL\nhypothesis', colour = 'red')
+```
+
+## Calculate p-value from the bootstrapping
+
+You want to area under the subset of the histogram where 0 intersects
+
+## Doing this quicker using `moderndive` functions
+
+I don't know how to do this yet, but this [moderndive textbook](https://moderndive.com/7-sampling.html#what-proportion-of-this-bowls-balls-are-red)might help both of us figure it out!
