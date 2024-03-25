@@ -1,0 +1,11 @@
+---
+editor: 
+  markdown: 
+    wrap: 72
+---
+
+**Purpose**: to learn git
+
+**Date**: 7/Mar/24
+
+**Author**: PK

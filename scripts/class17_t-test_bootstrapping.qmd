@@ -1,0 +1,135 @@
+---
+title: "class17: t-tests and bootstrapping t-tests"
+format: html
+editor: visual
+---
+
+## We are working with iris data
+
+Familiarize yourself with the [data](https://www.statology.org/iris-dataset-r/)!
+
+::: aside
+We will use `iris` data. We are interesting the `sepal.length` column, and it's difference across 2 different species
+
+Sources: [flower image](http://www.sunnysimplelife.com/2012/03/spring.html) ; [flower diagram](https://en.wikipedia.org/wiki/Sepal)
+:::
+
+::: columns
+::: {.column width="50%"}
+![](../assets/iris_flower.png)
+:::
+
+::: {.column width="50%"}
+![](../assets/flower_diagram.png)
+:::
+:::
+
+## Setup
+
+Loading libraries and such
+
+```{r setup}
+library(tidyverse) # data manipulation + plotting
+iris <- iris # get dataset into environment
+```
+
+## Processing data a.k.a. data wrangling
+
+Apart from the identifiers (the `Species` column), we only need the `Sepal.Length` column to run the t-test on. And we need to `filter` out only 2 species: `virginica` and `versicolor`. We need only 2 species *since t-test can only compare 2 things ; for comparing more species, explore doing ANOVA below)*
+
+```{r data-wrangle}
+# finished data wrangling
+```
+
+## Do a t-test
+
+Use the R function `t.test()` to do a t-test. Explore the parameters within this function and see how the P-values change when you change them. Important one is the `alternative` ; try going between `two-sided`, `less` and `greater` and understand the results
+
+```{r}
+
+```
+
+### Try doing ANOVA on all 3 species!
+
+This tells you that there are atleast 2 species within the 3 that differ from each other significantly. Note: ANOVA also assumes data is normally distributed, independence and other [such stuff](https://statsandr.com/blog/anova-in-r/#underlying-assumptions-of-anova).
+
+Use this for help - <https://statsandr.com/blog/anova-in-r/>
+
+## Do bootstrapping
+
+Remember: Bootstrapping involves -
+
+-   Sampling with replacement. Here you need to resample within each of the 2 species types
+
+    -   Your re-sample will be the same size as your sample!
+
+-   Calculating a summary statistic from each bootstrapped sample. The statistic in this case is the `difference in the means` of the two different species' bootstrap samples.
+
+-   Iterating this process many times. Here we will use 10,000 times
+
+::: {.span style="color: firebrick"}
+Outline your algorithm here
+
+-   It is very helpful to write out or draw a flow chart
+
+-   You need to see what needs to be done in your own language
+
+-   Before you explain it to the computer in the R language!
+:::
+
+```{r bootstrapping}
+
+
+```
+
+## Plot histogram
+
+Show the histogram of the means of the bootstrapping excercise
+
+## Calculate p-value from the bootstrapping
+
+(graphically) You want to area under the tail/subset of the histogram - starting from where 0 intersects towards the more extreme side (away from the peak)
+
+This is the probability that the bootstrapping distribution is more extreme than the NULL hypothesis value. *Mathematically it is the number of diff_means\< 0 / total \# of points in diff_means*
+
+# t-test \[versicolor + 0.5\] with virginica
+
+What happens if we add 0.5 to each element of versicolor (which is the same as adding 0.5 to the bootstrapped mean or reducing 0.5 from the diffmeans!)
+
+-   Since the diffmeans come closer together, the p-value calculation will be more interesting and likely closer to the 0.05 threshold
+
+## one-sided t-test
+
+Alternative way to run the `t.test()` function is to refer to two columns within the data for the `x =` and `y =` options. This can be done either using `data$colname` .. or a more succinct way using the with command (*this avoids repeating the data twice for each column)*
+
+```{r}
+
+```
+
+Now we see that the p-value is much closer
+
+## bootstrapping 
+
+```{r}
+
+```
+
+## histogram
+
+show the same histogram format with the new data
+
+```{r}
+
+```
+
+## get p-value
+
+Compare with the t-test's p value which is quite close!
+
+```{r}
+
+```
+
+# Doing this quicker using `moderndive` functions
+
+I don't know how to do this yet, but this [moderndive textbook](https://moderndive.com/7-sampling.html#what-proportion-of-this-bowls-balls-are-red)might help both of us figure it out!
