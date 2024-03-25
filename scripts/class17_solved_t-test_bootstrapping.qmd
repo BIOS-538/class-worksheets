@@ -35,7 +35,7 @@ iris <- iris # get dataset into environment
 
 ## Processing data a.k.a. data wrangling
 
-Apart from the identifiers, we only need the `Sepal.Length` column. And we need to `filter` out only 2 species: `virginica` and `versicolor`. We need only 2 species *since t-test can only compare 2 things ; for more explore doing ANOVA below)*
+Apart from the identifiers (the `Species` column), we only need the `Sepal.Length` column to run the t-test on. And we need to `filter` out only 2 species: `virginica` and `versicolor`. We need only 2 species *since t-test can only compare 2 things ; for comparing more species, explore doing ANOVA below)*
 
 ```{r data-wrangle}
 
@@ -92,9 +92,11 @@ report::report(one_side_t) # use this for a nice succinct report
 
 ```
 
-### Try doing ANOVA on all 3 species!
+*note the* `difference = -0.65` here, we will overlay this value on the histogram
 
-This tells you that there are atleast 2 species within the 3 that differ from each other significantly. Note: ANOVA also assumes data is normally distributed, independance and other [such stuff](https://statsandr.com/blog/anova-in-r/#underlying-assumptions-of-anova).
+## Try ANOVA on all 3 species!
+
+This tells you that there are atleast 2 species within the 3 that differ from each other significantly. Note: ANOVA also assumes data is normally distributed, independence and other [such stuff](https://statsandr.com/blog/anova-in-r/#underlying-assumptions-of-anova).
 
 Use this for help - <https://statsandr.com/blog/anova-in-r/>
 
@@ -106,13 +108,238 @@ oneway.test(Sepal.Length ~ Species, data = iris)
 
 Remember: Bootstrapping involves -
 
--   Sampling with replacement. Here you need to resample within each of the 2 species types
+-   Sampling with replacement. Here you need to re-sample within each of the 2 species types
 
     -   Your re-sample will be the same size as your sample!
 
 -   Calculating a summary statistic from each bootstrapped sample. The statistic in this case is the `difference in the means` of the two different species' bootstrap samples.
 
 -   Iterating this process many times. Here we will use 10,000 times
+
+Note: Since our p-value is quite low, we will also repeat the t-test and bootstrapping with data that is closer to get the p-values closer (similar to the python workflow). Hence it is ideal to reshape the data using the `pivot()` family functions to bring each species into a separate column
+
+::: {.span style="color: firebrick"}
+Outline of the algorithm
+
+1.  Grab the two species data separately from the data -\> into two columns.
+
+2.  For each column run these operations 3-5 below (by putting them in a function)
+
+3.  Bootstrapping
+
+    1.  Make bootstrapped data for each using `sample()` function
+
+    2.  Find the mean of each bootstrapped data ; and the difference in the means
+
+4.  Now put the above \# 2 into a function
+
+5.  Run it `10,000` times while recording result in a tibble using a `map()` family of commands
+:::
+
+```{r pivot-wide}
+
+iris2_wide <- 
+  
+  # make a serial number column (without this pivot makes a single row!)
+  mutate(iris2, index = row_number()) %>% 
+  
+  # now do the pivoting
+  pivot_wider(names_from = Species, 
+              values_from = Sepal.Length)
+```
+
+Ref: Found the use of `row_number()` [here](https://stackoverflow.com/a/12925090/9049673)
+
+```{r bootstrapping-function}
+#' bootstrapping function for t-tests on 2 groups
+#' @param .df grouped tibble, 2 categores in grouping col. Defaults `iris2`
+#' @param .column string; name of column for bootstrapping
+bootstrapped_mean <- function(.vector, .size = length(.vector))
+{
+  
+  .boots <- 
+    sample(.vector, size = .size, 
+           replace = TRUE)
+    
+  # if you want the intermediate bootstrapped data, return `.boot`
+  
+  # otherwise will only return the summary measurement
+  .means_boot <- mean(.boots)
+}
+
+
+#' get multiple bootstrapped means
+#' @param .df grouped tibble, 2 categores in grouping col. Defaults `iris2`
+#' @param .column string; name of column for bootstrapping
+get_n_boots <- function(.df = iris2_wide,
+                        .column = 'versicolor',
+                        num_of_boots = 10000)
+{
+    # isolate the column from the dataset (as a vector, so need two : `[[`)
+    .vec <- .df[[.column]]
+    .len <- length(.vec)
+    
+    # map_dbl returns a vector of numbers
+    # better/faster than a for() loop: doesn't do many write operations
+    map_dbl(1:num_of_boots,
+            ~ bootstrapped_mean(.vec, .len))
+}
+
+# test the function with a small bootstrap size
+get_n_boots(num_of_boots = 5)
+
+```
+
+::: {.div style="color: firebrick"}
+Quick note:
+
+To **generalize** this bootstrapping function to **any column** in any dataset, add a parameter
+
+`.column = Sepal.Length` to the function and use `{{.column}}` in place of the `Sepal.Length` like this
+
+`bootdat = sample({{.column}}, ..`
+:::
+
+Now onto the iteration 10,000 times with the above functions and saving data into a tibble
+
+```{r iteration}
+
+bootdata <-
+  tibble(boot_id = 1:10000,
+         mean_versicolor = get_n_boots(),
+         mean_virginica = get_n_boots(.column = 'virginica'),
+         
+         diff_means = mean_virginica - mean_versicolor
+         )
+```
+
+## Plot histogram
+
+Show the histogram of the means of the bootstrapping exercise
+
+```{r hist}
+
+ggplot(bootdata, 
+       mapping = aes(diff_means)) + geom_histogram(alpha = 0.6) + 
+  
+  # show the difference in the original sample means
+  geom_vline(aes(xintercept = 0.65), linetype = 2) + 
+  annotate(geom = 'text', x = 0.7, y = 250, label = 'Original\nvalue') +
+  
+  # show the NULL hypothesis = 0 difference between means
+  geom_vline(aes(xintercept = 0), colour = 'red') + 
+  annotate(geom = 'text', x = 0.1, y = 250, 
+           label = 'NULL\nhypothesis', colour = 'red')
+```
+
+## Calculate p-value from the bootstrapping
+
+(graphically) You want to area under the subset of the histogram where 0 intersects towards the more extreme side (away from the peak)
+
+This is the probability that the bootstrapping distribution is more extreme than the NULL hypothesis value. *Mathematically it is the number of diff_means\< 0 / total \# of points in diff_means*
+
+```{r boot-p-val}
+with(bootdata, 
+  sum(diff_means < 0) / length(diff_means) )
+```
+
+The result here, 0 is very close the the t-test p-value we got which is 1e-7
+
+# t-test \[versicolor + 0.5\] with virginica
+
+What happens if we add 0.5 to each element of versicolor (which is the same as adding 0.5 to the bootstrapped mean or reducing 0.5 from the diffmeans!)
+
+-   Since the diffmeans come closer together, the p-value calculation will be more interesting and likely closer to the 0.05 threshold
+
+## one-sided t-test
+
+Alternative way to run the `t.test()` function is to refer to two columns within the data for the `x =` and `y =` options. This can be done either using `data$colname` .. or a more succinct way using the with command (*this avoids repeating the data twice for each column)*
+
+```{r one-sided-closer}
+
+t_test_closer <- 
+  with(data = iris2_wide,
+     t.test(x = versicolor + 0.5, y = virginica, alternative = 'greater') 
+       ) %>% 
+  
+  print
+```
+
+Now we see that the p-value is much closer
+
+## bootstrapping 
+
+```{r boot-closer}
+
+# make a new column with versi2
+iris2_closer <- 
+  mutate(iris2_wide, versi2 = versicolor + 0.5)
+
+# bootstrap
+boot_closer <-
+  tibble(boot_id = 1:10000,
+         mean_versi2 = get_n_boots(.df = iris2_closer, .column = 'versi2'),
+         mean_virginica = get_n_boots(.column = 'virginica'),
+         
+         diff_means = mean_virginica - mean_versi2
+         )
+```
+
+## histogram
+
+show the same histogram format with the new data
+
+```{r hist-closer}
+
+# get the difference of original means to show in the histogram
+# in the original data, we used 0.65 from the report. Here let's calculate it again..
+orig_diffmean <- 
+  summarize(iris2_closer, m = mean(virginica - versi2)) %>% 
+  pull(m)
+
+# ggplot
+ggplot(boot_closer, 
+       mapping = aes(diff_means)) + geom_histogram(alpha = 0.6) + 
+  
+  # show the difference in the original sample means
+  geom_vline(aes(xintercept = orig_diffmean), linetype = 2) + 
+  annotate(geom = 'text', x = 0.7, y = 250, label = 'Original\nvalue') +
+  
+  # show the NULL hypothesis = 0 difference between means
+  geom_vline(aes(xintercept = 0), colour = 'red') + 
+  annotate(geom = 'text', x = 0.1, y = 250, 
+           label = 'NULL\nhypothesis', colour = 'red')
+
+```
+
+## get p-value
+
+```{r p-val-closer}
+
+with(boot_closer,
+     
+    sum(diff_means < 0) / length(diff_means)  
+     )
+
+```
+
+Compare with the t-test's p value which is quite close!
+
+```{r}
+t_test_closer$p.value
+```
+
+# Doing this quicker using `moderndive` functions
+
+I don't know how to do this yet, but maybe this [moderndive textbook](https://moderndive.com/7-sampling.html#what-proportion-of-this-bowls-balls-are-red) might help both of us figure it out!
+
+`moderndive::rep_sample_n()` function can make n bootstrapped samples (*probably more efficiently than the manual version above?*)
+
+# (archive) Bootstrapping in long format
+
+If you needed to do bootstrapping directly on the iris2 data, you would do it like this. I went down this path and decided to do wider eventually. But putting this here for reference!
+
+On a side point, this is quite a bit slower than the above function. Tidyverse functions such as `mutate` are not meant to be iterated on 10,000 times!
 
 ::: {.span style="color: firebrick"}
 Outline of the algorithm
@@ -128,9 +355,14 @@ Outline of the algorithm
 5.  Run it multiple times while recording result in a tibble using a `map()` command
 :::
 
-```{r bootstrapping-function}
+```{r bootstrapping-long_function}
 #' bootstrapping function for t-tests on 2 groups
-#' 
+#' @param .df grouped tibble, 2 categores in grouping col. Defaults `iris2`
+#' @param .column name of column to use for bootstrapping
+#' @param return_which What do you want to return? 
+#' 1. `'boots'` -> bootstrapping data
+#' 2. 'individual_means' -> show the means of the two different species
+#' 3. 'diff_mean' -> Difference between means
 boot_difference_means <- function(.df = iris2,
                                   .column = Sepal.Length,
                                   return_which = 'diff_mean')
@@ -180,29 +412,3 @@ Now onto the iteration 10,000 times with the above function
 diff_means <-
   map_dbl(1:10000, ~ boot_difference_means())
 ```
-
-## Plot histogram
-
-Show the histogram of the means of the bootstrapping exercise
-
-```{r hist}
-
-ggplot(mapping = aes(diff_means)) + geom_histogram(alpha = 0.6) + 
-  
-  # show the difference in the original sample means
-  geom_vline(aes(xintercept = 0.65), linetype = 2) + 
-  annotate(geom = 'text', x = 0.7, y = 250, label = 'Original\nvalue') +
-  
-  # show the NULL hypothesis = 0 difference between means
-  geom_vline(aes(xintercept = 0), colour = 'red') + 
-  annotate(geom = 'text', x = 0.1, y = 250, 
-           label = 'NULL\nhypothesis', colour = 'red')
-```
-
-## Calculate p-value from the bootstrapping
-
-You want to area under the subset of the histogram where 0 intersects
-
-## Doing this quicker using `moderndive` functions
-
-I don't know how to do this yet, but this [moderndive textbook](https://moderndive.com/7-sampling.html#what-proportion-of-this-bowls-balls-are-red)might help both of us figure it out!
