@@ -1,6 +1,8 @@
 ---
 title: "class17: t-tests and bootstrapping t-tests"
-format: html
+format: 
+  html:
+    embed-resources: true
 editor: visual
 ---
 
@@ -267,7 +269,7 @@ t_test_closer <-
 
 Now we see that the p-value is much closer
 
-## bootstrapping 
+## bootstrapping
 
 ```{r boot-closer}
 
@@ -407,6 +409,7 @@ To **generalize** this bootstrapping function to **any column** in any dataset, 
 Now onto the iteration 10,000 times with the above function
 
 ```{r iteration-long_function}
+#| eval: false
 
 # make a numeric vector with the 10,000 values of difference betwn means
 diff_means <-
