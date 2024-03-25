@@ -5,11 +5,16 @@ format: html
 editor: visual
 ---
 
+```{r setup, include=FALSE}
+# this is just to hide warnings in output so they don't take up a bunch of space
+knitr::opts_chunk$set(warning = FALSE, message = FALSE) 
+```
+
 ## PCA Analysis
 
 Great now that we are in R we can work through PCA Analysis together. If you fall behind, check this source for what we are working through: [Link](https://allisonhorst.github.io/palmerpenguins/articles/pca.html)
 
-```{r loading libraries}
+```{r loading libraries, echo=FALSE, include=FALSE}
 # source for this nice way to check packages needed: https://statsandr.com/blog/an-efficient-way-to-install-and-load-r-packages/
 
 # Package names
@@ -47,7 +52,7 @@ penguins_corr
 #### What correlations do we see?
 
 ::: {style="color: teal"}
-Body mass and flipper length appear highly correlated, but neither of the bill variables appears to be as highly correlated with any other variables.
+Write 1-3 sentences.
 :::
 
 ### Let's visualize these correlations
@@ -60,6 +65,8 @@ penguins %>%
                       "bill_length_mm", "bill_depth_mm")) +
   scale_colour_manual(values = c("darkorange","purple","cyan4")) +
   scale_fill_manual(values = c("darkorange","purple","cyan4"))
+
+
 ```
 
 ### PCA Time!
@@ -97,6 +104,7 @@ penguins %>%
 ```
 
 ```{r visualizing % of variance that each component accounts for in the data}
+# this is called a scree plot, named after the word for rubble at bottom of mountain, because maybe just PC1 and PC2 matters and the rest is just rubble at the bottom of the mountain
 penguin_recipe %>% 
   tidy(id = "pca", type = "variance") %>% 
   dplyr::filter(terms == "percent variance") %>% 
@@ -230,7 +238,7 @@ penguin_recipe %>%
   ylab("% of total variance")
 ```
 
-### Do PC3 and PC4 help us understand difference in the data or not really?
+### Do PC3 and PC4 help us understand difference in the data or not really? Are they just the scree at the bottom of the mountain?
 
 ::: {style="color: teal"}
 Write 1-3 sentences here describing the data.
