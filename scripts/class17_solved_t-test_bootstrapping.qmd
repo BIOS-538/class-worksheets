@@ -234,7 +234,7 @@ ggplot(bootdata,
 
 ## Calculate p-value from the bootstrapping
 
-(graphically) You want to area under the subset of the histogram where 0 intersects towards the more extreme side (away from the peak)
+(graphically) You want to area under the tail/subset of the histogram - starting from where 0 intersects towards the more extreme side (away from the peak)
 
 This is the probability that the bootstrapping distribution is more extreme than the NULL hypothesis value. *Mathematically it is the number of diff_means\< 0 / total \# of points in diff_means*
 
