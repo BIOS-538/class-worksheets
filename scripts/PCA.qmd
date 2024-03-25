@@ -212,7 +212,31 @@ ggplot(penguins, aes(x = bill_length_mm, y = bill_depth_mm, colour = species)) +
   scale_colour_manual(values = c("darkorange","purple","cyan4")) 
 ```
 
-### Note that there are base R PCA functions that can be used as well
+### Okay, can you try to get the biplot for PC 3 and 4?
+
+```{r PC 3 and 4 biplot}
+
+```
+
+### And now let's look at percent variance explained again
+
+```{r looking back at percent variance explained }
+penguin_recipe %>% 
+  tidy(id = "pca", type = "variance") %>% 
+  dplyr::filter(terms == "percent variance") %>% 
+  ggplot(aes(x = component, y = value)) + 
+  geom_col(fill = "#b6dfe2") + 
+  xlim(c(0, 5)) + 
+  ylab("% of total variance")
+```
+
+### Do PC3 and PC4 help us understand difference in the data or not really?
+
+::: {style="color: teal"}
+Write 1-3 sentences here describing the data.
+:::
+
+## Note that there are base R PCA functions that can be used as well
 
 <https://www.datacamp.com/tutorial/pca-analysis-r>
 
