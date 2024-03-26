@@ -269,7 +269,7 @@ t_test_closer <-
 
 Now we see that the p-value is much closer
 
-## bootstrapping
+### bootstrapping
 
 ```{r boot-closer}
 
@@ -287,7 +287,7 @@ boot_closer <-
          )
 ```
 
-## histogram
+### histogram
 
 show the same histogram format with the new data
 
@@ -314,22 +314,58 @@ ggplot(boot_closer,
 
 ```
 
-## get p-value
+### get p-value
 
 ```{r p-val-closer}
 
-with(boot_closer,
+boot_p_val <- 
+  
+  with(boot_closer,
      
     sum(diff_means < 0) / length(diff_means)  
-     )
+     ) %>% 
+  
+  print()
 
 ```
-
-Compare with the t-test's p value which is quite close!
 
 ```{r}
 t_test_closer$p.value
 ```
+
+### Comparison
+
+Compare with the t-test's p value which is quite close!
+
+```{r compare-t-tailed}
+
+str_c('p-value for t-test is: ', t_test_closer$p.value %>% round(3))
+str_c('p-value for bootstrapping t-test: ', boot_p_val %>% round(3))
+```
+
+## Two tailed t-test
+
+### Do the t-test for two tailed now
+
+Do the t-test command above to get the one tailed value for `versicolor + 0.5 < virginica`. The only thing to change from above will be the `alternative = 'greater'` input to the `t.test()` function
+
+```{r}
+
+```
+
+### bootstrapping p-value
+
+Now use the same bootstrapping data from above to calculate the two tailed p-value.
+
+Note: It is assumed that the two-tailed probability is double the one tailed. This works since the t-distribution is symmetric! Our bootstrapping one need not be, so you should calculate the exact value. Refer to the two tailed image in the slides for class17
+
+```{r}
+
+```
+
+### Compare both values in this section
+
+Make some brief note of why the values are alike or different and which one would you trust when they differ?
 
 # Doing this quicker using `moderndive` functions
 
