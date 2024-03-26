@@ -152,6 +152,20 @@ Note: It is assumed that the two-tailed probability is double the one tailed. Th
 
 Make some brief note of why the values are alike or different and which one would you trust when they differ?
 
-# Doing this quicker using `moderndive` functions
+## Graph the SEM and 90% CI
 
-I don't know how to do this yet, but this [moderndive textbook](https://moderndive.com/7-sampling.html#what-proportion-of-this-bowls-balls-are-red)might help both of us figure it out!
+*Note: We typically plot the 95% confidence interval, but I want you to do 90% here to understand the concept better/more generally*
+
+To show the confidence intervals, you can use this function `stat_summary()`. Reference - [ggplot documentation](https://ggplot2.tidyverse.org/reference/stat_summary.html). Or look at the source code for the `Exploring SEM, CI within bootstrap dist.` slide on [lecture17.qmd](https://github.com/BIOS-538/BIOS-538.github.io/blob/main/slides/lecture17.qmd)
+
+# Doing this quicker/better using `moderndive` functions
+
+I don't know how to do this yet, but this [moderndive textbook](https://moderndive.com/7-sampling.html#what-proportion-of-this-bowls-balls-are-red) might help both of us figure it out!
+
+`moderndive::rep_sample_n()` function can make n bootstrapped samples (*probably more efficiently than the manual version above?*)
+
+-   +1 bonus point for any efficiency above the solutions I came up with
+
+-   +1 bonus point for timing the code with the old bootstrapping (end of solution) / any other method to bootstrap you came up with ; and comparing it to the version in the solution. Hints: [Rbloggers](https://www.r-bloggers.com/2017/05/5-ways-to-measure-running-time-of-r-code/), [stackoverflow](https://stackoverflow.com/questions/6262203/measuring-function-execution-time-in-r)
+
+    -   +1 more point for explaining why one code runs faster than the other or what you think might be the bottleneck in the other. You don't need to do a detailed [profiling](https://bookdown.org/rdpeng/rprogdatascience/profiling-r-code.html) but just an intuitive answer!
