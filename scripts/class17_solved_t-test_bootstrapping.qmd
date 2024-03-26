@@ -153,9 +153,9 @@ iris2_wide <-
 Ref: Found the use of `row_number()` [here](https://stackoverflow.com/a/12925090/9049673)
 
 ```{r bootstrapping-function}
-#' bootstrapping function for t-tests on 2 groups
-#' @param .df grouped tibble, 2 categores in grouping col. Defaults `iris2`
-#' @param .column string; name of column for bootstrapping
+#' bootstrapping/sampling and return mean. Use for bootstrapping t-tests
+#' @param .vector `numeric` vector to bootstrap on 
+#' @param .size `numeric`. sample size, only if sampling
 bootstrapped_mean <- function(.vector, .size = length(.vector))
 {
   
@@ -171,7 +171,7 @@ bootstrapped_mean <- function(.vector, .size = length(.vector))
 
 
 #' get multiple bootstrapped means
-#' @param .df grouped tibble, 2 categores in grouping col. Defaults `iris2`
+#' @param .df grouped tibble, 2 categores in grouping col. Defaults `iris2_wide`
 #' @param .column string; name of column for bootstrapping
 get_n_boots <- function(.df = iris2_wide,
                         .column = 'versicolor',
