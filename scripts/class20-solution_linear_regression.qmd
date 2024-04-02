@@ -78,3 +78,19 @@ $mpg = 30 - 0.7 * hp + noise$
 ```{r summ-linreg}
 summary(m) # shows more analysis than just print(m)
 ```
+
+## Detailed diagnostics of fit
+
+```{r plot-lm}
+
+plot(m)
+```
+
+# Explore Anscomsbe's quartet
+
+Explore the fitting between y1 \~ x1 .. y1 \~ x4
+
+```{r ascombe-quartet}
+
+anscombe <- datasets::anscombe
+```
