@@ -1,0 +1,80 @@
+---
+title: "class20: linear regression"
+format: 
+  html:
+    embed-resources: true
+editor: visual
+---
+
+## Working with mtcars data
+
+Using the readily available mtcars dataset, we will follow this to [guide](https://modernstatisticswithr.com/regression.html#linearmodels) our understanding of linear regressions.
+
+Reference : [modern statistics with R textbook/chapter 8.1](https://modernstatisticswithr.com/regression.html#linearmodels)
+
+Setup, loading package and data
+
+```{r setup}
+library(tidyverse)
+mtcars <- mtcars
+```
+
+Look at the two columns of interest in a plot quickly
+
+```{r quick-visualize}
+plt_1 <- 
+  {ggplot(mtcars, aes(hp, mpg)) + geom_point()} %>% 
+  print
+```
+
+Graph shows that higher horsepowered cars (`hp`) consume more fuel and have less fuel efficiency (miles per gallon / `mpg`)
+
+# Correlation
+
+Check the correlation between `hp` and `mpg`
+
+```{r corr}
+with(data = mtcars,
+  cor(x = hp, y = mpg))
+```
+
+Negative value implies as x increases, y decreases ***linearly***
+
+## Spearpam's Rank correlation
+
+Rank = 1,2,3,4.. rank of the values after ordering them. This is a non-parametric technique (*doesn't involve fitting to distributions)*, and it throws away data magnitudes retaining only their order.
+
+This tells us approximately if the ranks of x and corresponding y match up well
+
+-   +1 = perfect match of ranks of x and y
+
+-   -1 = order is inverted but perfect match
+
+-    0 = order of y is totally jumbled up compared to x =\> their relationship is `not monotonic`
+
+```{r rank-corr}
+with(data = mtcars,
+  cor(x = hp, y = mpg, method = 'spearman'))
+```
+
+The rank only correlation is higher absolute valued, which means the data definitely has a decreasing relationship but is probably not very *linear!*
+
+# Linear regression
+
+Now let's try to fit a linear regression
+
+```{r lin-reg}
+
+# do linear regression
+m <- lm(formula = mpg ~ hp, data = mtcars)
+
+m # quick overview
+```
+
+This implies that the equation to fit the two vectors is
+
+$mpg = 30 - 0.7 * hp + noise$
+
+```{r summ-linreg}
+summary(m) # shows more analysis than just print(m)
+```
