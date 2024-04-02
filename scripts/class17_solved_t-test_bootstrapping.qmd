@@ -6,6 +6,16 @@ format:
 editor: visual
 ---
 
+# Bootstrapping [worksheet](https://github.com/BIOS-538/class-worksheets/blob/main/scripts/class17_t-test_bootstrapping.qmd) time (40 m)
+
+-   (3 m) Go over the bootstrapping algorithm (*not code!*)
+
+-   (10 m) Work on bootstrapping code
+
+-   (10 m) Go over bootstrapping `code`
+
+-   (15 m) Work on p-values from bootstrapping data
+
 ## We are working with iris data
 
 Familiarize yourself with the [data](https://www.statology.org/iris-dataset-r/)!
