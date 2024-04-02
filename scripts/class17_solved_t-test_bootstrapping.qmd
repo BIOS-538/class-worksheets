@@ -133,19 +133,23 @@ Note: Since our p-value is quite low, we will also repeat the t-test and bootstr
 ::: {.span style="color: firebrick"}
 Outline of the algorithm
 
-1.  Grab the two species data separately from the data -\> into two columns.
+1.  Grab the **two** **species** data separately from the data
 
-2.  For each column run these operations 3-5 below (by putting them in a function)
+    1.  (optional.)-\> into two columns. (`pivot_wider()`)
+
+2.  For each species run these operations 3 below (by putting them in a function). Run it `10,000` times while recording result in a tibble using a `map()` family of commands
 
 3.  Bootstrapping
 
-    1.  Make bootstrapped data for each using `sample()` function
+    1.  Make bootstrapped data for each using `sample(50, ..., replacement = TRUE)` function
 
-    2.  Find the mean of each bootstrapped data ; and the difference in the means
+    2.  Find the **mean** of each bootstrapped data ;
 
-4.  Now put the above \# 2 into a function
+4.  and the difference in the means (`column for virginica` - `versicolor`)
 
-5.  Run it `10,000` times while recording result in a tibble using a `map()` family of commands
+5.  Make a histogram
+
+6.  find the p-value from the bootstrapped data tibble/vector
 :::
 
 ```{r pivot-wide}
