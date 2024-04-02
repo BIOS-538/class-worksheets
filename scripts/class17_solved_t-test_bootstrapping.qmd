@@ -375,6 +375,27 @@ Make some brief note of why the values are alike or different and which one woul
 
 *Note: We typically plot the 95% confidence interval, but I want you to do 90% here to understand the concept better/more generally*
 
+```{r}
+
+ggplot(boot_closer, 
+       mapping = aes(diff_means)) + geom_histogram(alpha = 0.6) + #the diff_means is on the x axis with the bar graph having a tranperency of 0.6 
+  
+  # show the difference in the original sample means
+  geom_vline(aes(xintercept = orig_diffmean), linetype = 2) + #provides a vertical dashed line
+  annotate(geom = 'text', x = 0.7, y = 250, label = 'Original\nvalue') + #provides text 
+  
+  # show the NULL hypothesis = 0 difference between means
+  geom_vline(aes(xintercept = 0), colour = 'red') + #provides a vertical solid red line
+  annotate(geom = 'text', x = 0.1, y = 250, 
+           label = 'NULL\nhypothesis', colour = 'red') + 
+  stat_summary(aes(y = 0, xintercept = after_stat(x)), 
+               fun = quantile, 
+               fun.args = list(probs = c(0.01, 0.90)), # 2.5 to 97.5% 
+               geom = "vline", 
+               alpha = 0.5,
+               orientation = "y")
+```
+
 To show the confidence intervals, you can use this function `stat_summary()`. Reference - [ggplot documentation](https://ggplot2.tidyverse.org/reference/stat_summary.html). Or look at the source code for the `Exploring SEM, CI within bootstrap dist.` slide on [lecture17.qmd](https://github.com/BIOS-538/BIOS-538.github.io/blob/main/slides/lecture17.qmd)
 
 # Doing this quicker using `moderndive` functions
