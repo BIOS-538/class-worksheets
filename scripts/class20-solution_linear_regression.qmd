@@ -40,7 +40,7 @@ with(data = mtcars,
 
 Negative value implies as x increases, y decreases ***linearly***
 
-## Spearpam's Rank correlation
+## Spearman's Rank correlation
 
 Rank = 1,2,3,4.. rank of the values after ordering them. This is a non-parametric technique (*doesn't involve fitting to distributions)*, and it throws away data magnitudes retaining only their order.
 
@@ -81,6 +81,12 @@ summary(m) # shows more analysis than just print(m)
 
 ## Detailed diagnostics of fit
 
+What to look for in these plots?
+
+-   How to interpret diagnostic plots in R / [statology](https://www.statology.org/diagnostic-plots-in-r/)
+
+-   This [section](https://cran.r-project.org/web/packages/ggResidpanel/vignettes/introduction.html) should be helpful for general interpretation of these plots, *made with a better pacakge:* **Diagnostic Panels with `resid_panel`**
+
 ```{r plot-lm}
 
 plot(m)
@@ -93,4 +99,10 @@ Explore the fitting between y1 \~ x1 .. y1 \~ x4
 ```{r ascombe-quartet}
 
 anscombe <- datasets::anscombe
+```
+
+```{r anssombe-explore}
+
+ggplot(anscombe, aes(x2, y2)) + geom_point() + 
+  geom_smooth(method = 'lm')
 ```
