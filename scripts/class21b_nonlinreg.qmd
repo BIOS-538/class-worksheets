@@ -108,6 +108,8 @@ Two kinds of dose-response shapes (from the source above)
 
 ## Doing dose-response in R
 
+We will follow this [workflow ](https://jpquast.github.io/protti/articles/data_analysis_dose_response_workflow.html#fitting-dose-response-curves)for fitting the dose response but different data
+
 Use `ryegrass` data from the `drc` package.
 
 What's in this data?
