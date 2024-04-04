@@ -1,0 +1,131 @@
+---
+title: "class21, part B: non-linear regression: dose response"
+format: 
+  html:
+    embed-resources: true
+editor: visual
+---
+
+# What's considered non-linear again?
+
+Are these non-linear?
+
+1.  $y = \alpha + \beta x^2$
+
+2.  $y = \alpha + \beta/x$
+
+3.  $y = \alpha + \beta x^\theta$
+
+# Basic non linear regression with `nls`
+
+Let's fit the mtcars data using a non linear fit with a general power (equation 3 above)
+
+Here's a [reference](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/formula)on how to write formula for non linear stuff. Since I couldn't figure it out, I wrote a function for this
+
+```{r load-data}
+
+library(tidyverse)
+mtcars <- mtcars
+```
+
+## old approach -\> coming from lm
+
+Old approach changing the formula from the linear regression, didn't work :(
+
+```{r nls-mtcars}
+
+parabola_formula <- y ~ x^t
+
+# try to do a fit
+m <- nls(formula = mpg ~ hp^t, data = mtcars)
+# fails because 
+
+# try the plotting
+ggplot(mtcars, aes(hp, mpg)) + geom_point() + 
+  
+  geom_smooth(method = 'nls', formula = parabola_formula)
+  
+  # replacing geom_smooth with a similar function
+  ggpmisc::stat_poly_line(method = 'nls', formula = parabola_formula, size = 0.5) #+ 
+  
+  # ggpmisc::stat_poly_eq(
+  #   mapping = ggpmisc::use_label(c("eq", 'R2')),
+  #   label.x = 'right', # move label to the right!
+  #   formula = parabola_formula)
+
+```
+
+## making a custom function based on the data
+
+```{r nls-fn}
+
+polynomial_nls <- function(results_array)
+{ # Fittiing Hill equation (typically useful for dose reponse curves)
+  
+  # source: https://github.com/dritoshi/Fitting-Hill-equation/blob/master/bin/hill.r
+  # Itoshi NIKAIDO <dritoshi@gmail.com>
+  
+  # Unpack data
+  x  <- results_array$hp # x axis = independent variable ; L short for ligand
+  y  <- results_array$mpg # dependent variable
+  
+  # # conf
+  # output <- "results/hill.pdf"
+  
+  # initial
+  a0 <- 20 # can also use : min(y)
+  b0  <- 13
+  t0 <- 2
+  
+  # fitting Hill equation
+  y.nls <- nls(y ~ a + b * x ^ t, start = c(a = a0, b = b0, t = t0))
+  
+  # old stuff, ignore this
+  
+  # # extract fitting data
+  # y.nls.summary <- summary(y.nls)
+  # y.nls.n       <- y.nls.summary$param[1]
+  # y.nls.Kd      <- y.nls.summary$param[2]
+  # y.nls.predict <- predict(y.nls)
+  # results <- cbind(y, y.nls.predict)
+}
+```
+
+```{r run-nls}
+
+m <- polynomial_nls(mtcars)
+```
+
+# Dose response curves with `nls`
+
+## What is dose-response?
+
+Read this reference for a wonderful introduction to [dose response curves](https://bioassay.dk/intro-dose-respons-a-bioassay-curve/)
+
+Two kinds of dose-response shapes (from the source above)
+
+![](images/dose_response_2.webp)
+
+## Doing dose-response in R
+
+Use `ryegrass` data from the `drc` package.
+
+What's in this data?
+
+> ryegrass / Effect of ferulic acid on growth of ryegrass
+
+So most likely this is a toxic compound that inhibits to root growth of ryegrass
+
+```{r setup}
+
+library(tidyverse)
+ryegrass <- drc::ryegrass
+
+
+```
+
+# More references
+
+-   Dose response curves in R : [gasparyan.co/blog](https://gasparyan.co/post/drc/2018-03-19-r-rmarkdown/)
+
+-   
