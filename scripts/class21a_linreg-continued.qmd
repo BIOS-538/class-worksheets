@@ -1,5 +1,5 @@
 ---
-title: "class20: linear regression"
+title: "class21, part A: polynomial linear regression, piecewise, vectorized workflows"
 format: 
   html:
     embed-resources: true
@@ -111,6 +111,8 @@ Reference: how to extract standard error from the lm fit : [statology.org](https
 # Try polynomial fit (still linear)
 
 We will use an x\^2 term to fit to a curve instead of a straight line to see if the fit is "better"
+
+This is a good reference for this concept - [r-bloggers](https://www.r-bloggers.com/2023/12/unveiling-the-magic-of-polynomial-regression-in-r-a-step-by-step-guide/)
 
 ```{r polynomial-fit}
 parabola_formula <- y ~ poly(x, 2)
