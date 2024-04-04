@@ -1,0 +1,181 @@
+---
+title: "class20: linear regression"
+format: 
+  html:
+    embed-resources: true
+editor: visual
+---
+
+# Explore Anscomsbe's quartet
+
+Explore the fitting between y1 \~ x1 .. y1 \~ x4
+
+```{r ascombe-quartet}
+library(tidyverse)
+anscombe <- datasets::anscombe
+```
+
+Plot a single x-y pair
+
+```{r anssombe-explore-1}
+
+ggplot(anscombe, aes(x2, y2)) + geom_point() + 
+  geom_smooth(method = 'lm', size = 0.5, alpha = 0.2) + 
+  
+  # adding equation
+  ggpmisc::stat_poly_eq(mapping = ggpmisc::use_label(c("eq", 'R2')), 
+                        formula = y ~ x)
+```
+
+Now we will use a vectorized workflow to plot all 4 xi,yi pairs of columns!
+
+-   This might appear more complex but is much more concise. A tiny bit of patience understanding this kind of vectorized workflow yields a lot of rewards over time 😃
+
+```{r anssombe-explore}
+
+# using vectorized workflow to plot all the series' regression lines and equations
+
+map2(str_c('x', 1:4), # quickly makes the vector of c('x1', 'x2', ..'x4')
+     str_c('y', 1:4),
+     
+     # call ggplot (as anonymous function using ~ .. = f(.x, .y))
+     ~ ggplot(anscombe, aes(.data[[.x]], .data[[.y]])) + geom_point() + 
+       
+       geom_smooth(method = 'lm', size = 0.5) + # add smoothed linear model fit
+       
+       # add equation and R2 of the fit
+       ggpmisc::stat_poly_eq(
+         mapping = ggpmisc::use_label(c("eq", 'R2')), 
+         formula = y ~ x)
+) %>% 
+  
+  # use patchwork to join all the plots into one!
+  patchwork::wrap_plots()
+```
+
+::: {.div style="color: darkgreen"}
+Key things
+
+-   map2 runs a vectorized workflow by picking each element from two parallel vectors
+
+    -   Since `x1`, `x2`.. by themselves don't mean anything outside the tibble, they will generate an error within the map/map2 commands; hence we make them as strings `'x1', 'y1..` ..
+
+    -   To use strings as input to ggplot, we use the [programmatic call](https://ggplot2.tidyverse.org/reference/aes_.html#life-cycle)
+
+-   patchwork's `wrap_plots()` [function](https://patchwork.data-imaginist.com/reference/wrap_plots.html) can join a list of multiple plots nicely!
+
+Reference for `stat_poly_eq()` function and related fits - [ggpmisc/vignette](https://cran.r-project.org/web/packages/ggpmisc/vignettes/model-based-annotations.html#stat_poly_eq-and-stat_poly_line)
+:::
+
+Observe how all the x,y pairs have the same line and R2 values!
+
+-   This is why just the linear regression can be misleading without a human eye looking at the underlying data / looking at the residuals for any weird patterns
+
+# Back to mtcars data
+
+redo the linear fit
+
+```{r lm-mtcars}
+mtcars <- mtcars
+
+ggplot(mtcars, aes(hp, mpg)) + geom_point() + 
+  
+  geom_smooth(method = 'lm', size = 0.5) + 
+  
+  ggpmisc::stat_poly_eq(
+    mapping = ggpmisc::use_label(c("eq", 'R2')),
+    label.x = 'right', # move label to the right!
+    formula = y ~ x)
+```
+
+## Goodness of fit/ (S = std error of regression)
+
+We can extract the standard error of regression (the better measure than R2) from the summary using the Sigma option. We know to use this value from the [documentation](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/summary.lm) of the `summary()` function applied to lm as `summary.lm`
+
+> sigma
+>
+> :   the square root of the estimated variance of the random error
+
+```{r calc-S}
+
+m_lm <- lm(formula = mpg ~ hp, data = mtcars)
+summary(m_lm)$sigma # std error of regression
+```
+
+::: div
+::: {style="color: darkgreen"}
+Reference: how to extract standard error from the lm fit : [statology.org](https://www.statology.org/extract-standard-error-from-lm-in-r/)
+:::
+:::
+
+# Try polynomial fit (still linear)
+
+We will use an x\^2 term to fit to a curve instead of a straight line to see if the fit is "better"
+
+```{r polynomial-fit}
+parabola_formula <- y ~ poly(x, 2)
+
+ggplot(mtcars, aes(hp, mpg)) + geom_point() + 
+  
+  # replacing geom_smooth with a similar function
+  ggpmisc::stat_poly_line(method = 'lm', formula = parabola_formula, size = 0.5) + 
+  
+  ggpmisc::stat_poly_eq(
+    mapping = ggpmisc::use_label(c("eq", 'R2')),
+    label.x = 'right', # move label to the right!
+    formula = parabola_formula)
+```
+
+## Goodness of fit/ (S = std error of regression)
+
+```{r poly-S}
+
+lm(formula = mpg ~ poly(hp, 2), data = mtcars) %>% 
+  summary() %>% 
+  {.$sigma}
+```
+
+Since the S value is lesser (*only slightly..)*, the polynomial fit does better job with fitting, but need explanation/hypothesis for it's shape. In other words *"points are close to the parabola than the straight line"*
+
+# Piecewise `lm` fitting
+
+Break the data into hp \< 200 and greater than 200, and try a method to fit two different lines. We can do this easily by breaking up the data two different colours for these subsets!
+
+```{r piecewise-colour}
+
+mtc2 <- mutate(mtcars, piece = hp < 200)
+
+ggplot(mtc2, aes(x = hp, y = mpg, colour = piece)) + geom_point() + 
+  
+  geom_smooth(method = 'lm') +
+
+  ggpmisc::stat_poly_eq(
+    mapping = ggpmisc::use_label(c("eq", 'R2')),
+    label.x = 'right' # move label to the right!
+    )
+```
+
+I also tried another method to fit right within the same dataset by modifying the equation but it doesn't work.
+
+```{r piecewise}
+
+piecewise_formula <- y ~ x + z
+
+ggplot(mtc2, aes(x = hp, y = mpg, z = piece)) + geom_point() + 
+  
+  
+  # line doesn't work with either methods ; I don't know why :(
+  
+  # ggpmisc::stat_poly_line(method = 'lm', 
+  #                         formula = piecewise_formula, 
+  #                         size = 0.5) + 
+  
+  # geom_smooth(mapping = aes(group = piece), 
+  #             method = 'lm', 
+  #             formula = mpg ~ hp * piece) + 
+  
+  ggpmisc::stat_poly_eq(
+    mapping = ggpmisc::use_label(c("eq", 'R2')),
+    label.x = 'right', # move label to the right!
+    formula = piecewise_formula)
+```
