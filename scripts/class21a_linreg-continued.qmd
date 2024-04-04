@@ -179,3 +179,11 @@ ggplot(mtc2, aes(x = hp, y = mpg, z = piece)) + geom_point() +
     label.x = 'right', # move label to the right!
     formula = piecewise_formula)
 ```
+
+## Practical application of linear regression
+
+-   qPCR - standard curves. Find my whole pipeline here on [github](https://github.com/ppreshant/qPCR-analysis)
+
+I use the linear regression to fit calibration standards from quantitative PCR and extract the $\alpha$, $\beta_1$ values to calibrate all other unknown sample data
+
+![](images/Std17_q017a.png)
