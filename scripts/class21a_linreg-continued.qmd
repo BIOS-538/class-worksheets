@@ -106,6 +106,8 @@ summary(m_lm)$sigma # std error of regression
 ::: div
 ::: {style="color: darkgreen"}
 Reference: how to extract standard error from the lm fit : [statology.org](https://www.statology.org/extract-standard-error-from-lm-in-r/)
+
+Reference that explains $R^2$ better - [statisticsbyjim](https://statisticsbyjim.com/regression/interpret-r-squared-regression/)
 :::
 :::
 
