@@ -11,6 +11,7 @@ editor: visual
 Explore the fitting between y1 \~ x1 .. y1 \~ x4
 
 ```{r ascombe-quartet}
+
 library(tidyverse)
 anscombe <- datasets::anscombe
 ```
@@ -117,7 +118,7 @@ This is a good reference for this concept - [r-bloggers](https://www.r-bloggers.
 ```{r polynomial-fit}
 parabola_formula <- y ~ poly(x, 2)
 
-ggplot(mtcars, aes(hp, mpg)) + geom_point() + 
+ggplot(mtcars, aes(x = hp, y = mpg)) + geom_point() + 
   
   # replacing geom_smooth with a similar function
   ggpmisc::stat_poly_line(method = 'lm', formula = parabola_formula, size = 0.5) + 
@@ -180,6 +181,17 @@ ggplot(mtc2, aes(x = hp, y = mpg, z = piece)) + geom_point() +
     mapping = ggpmisc::use_label(c("eq", 'R2')),
     label.x = 'right', # move label to the right!
     formula = piecewise_formula)
+```
+
+## try an lm with a group variable
+
+do an lm with this formula : piecewise_formula \<- mpg \~ hp + piece
+
+$mpg = \alpha + \beta_1 * hp + \beta_2 * piece + \beta_3 * hp * piece$
+
+```{r combined-lm}
+
+m <- lm(formula =  mpg ~ hp * piece, data = mtc2) %>% print
 ```
 
 ## Practical application of linear regression
