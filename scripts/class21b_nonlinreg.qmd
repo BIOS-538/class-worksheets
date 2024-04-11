@@ -20,7 +20,7 @@ Are these non-linear?
 
 Let's fit the mtcars data using a non linear fit with a general power (equation 3 above)
 
-Here's a [reference](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/formula)on how to write formula for non linear stuff. Since I couldn't figure it out, I wrote a function for this
+Here's a [reference](https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/formula) on how to write formula for non linear stuff. Since I couldn't figure it out, I wrote a function for this
 
 ```{r load-data}
 
@@ -95,6 +95,21 @@ polynomial_nls <- function(results_array)
 
 m <- polynomial_nls(mtcars)
 ```
+
+Do a nls fit with on mtcars data with mpg \~ hp\^t equation where t is a parameter to be fit
+
+```{r}
+
+# Do a nonlinear regression (nls) fit with on mtcars data with mpg ~ hp^t equation where t is a parameter to be fit
+
+# make a nls function
+
+
+```
+
+# Michaelis-Menten curve fit: `nls`
+
+We will follow this reference from [r-bloggers.com](https://www.r-bloggers.com/2016/02/first-steps-with-non-linear-regression-in-r/) and use copilot to speed up the process
 
 # Dose response curves with `nls`
 

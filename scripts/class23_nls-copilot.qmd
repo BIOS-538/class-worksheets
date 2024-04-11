@@ -1,0 +1,26 @@
+---
+  title: "class23, Github copilot + non-linear regression: dose response"
+format: 
+  html:
+  embed-resources: true
+editor: visual
+---
+
+# Github copilot + non-linear regression: dose response
+
+
+
+load tidyverse and mtcars data
+
+```{r load-data}
+# load tidyverse
+
+library(tidyverse)
+
+# load mtcars data
+mtcars <- mtcars
+
+```
+
+## Github copilot + non-linear regression: dose response
+
